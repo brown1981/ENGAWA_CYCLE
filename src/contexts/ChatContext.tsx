@@ -1,8 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { ChatSession, ChatMessage, AppTheme, GlobalSettings } from "@/lib/types";
-import { getAllSessions, saveSession as dbSaveSession, deleteSession as dbDeleteSession, initDB } from "@/lib/db";
+import { getAllSessions, saveSession as dbSaveSession, deleteSession as dbDeleteSession } from "@/lib/db";
 
 interface ChatContextType {
   sessions: ChatSession[];
@@ -34,20 +34,31 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [apiKey, setApiKey] = useState<string>("");
   const [model, setModel] = useState<string>("gpt-4o");
   const [settings, setSettings] = useState<GlobalSettings>(DEFAULT_SETTINGS);
+  const isInitialized = useRef(false);
 
   // Load state from DB & LocalStorage on mount
   useEffect(() => {
+    if (isInitialized.current) return;
+
     const load = async () => {
-      // Load sessions
+      // 1. Load settings first
+      const savedSettings = localStorage.getItem("workspace_settings");
+      let currentRetention = DEFAULT_SETTINGS.retentionDays;
+      if (savedSettings) {
+        const parsed = JSON.parse(savedSettings);
+        currentRetention = parsed.retentionDays;
+        setSettings(prev => ({ ...prev, ...parsed }));
+      }
+
+      // 2. Load sessions
       const data = await getAllSessions();
       const sorted = data.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
       
-      // Cleanup sessions based on retention policy (simple check)
       const now = new Date();
-      const retentionMs = settings.retentionDays * 24 * 60 * 60 * 1000;
+      const retentionMs = currentRetention * 24 * 60 * 60 * 1000;
       const filtered = sorted.filter(s => {
-        if (settings.retentionDays === 0) return false;
-        if (settings.retentionDays >= 365) return true;
+        if (currentRetention === 0) return false;
+        if (currentRetention >= 365) return true;
         const diff = now.getTime() - new Date(s.updatedAt).getTime();
         return diff < retentionMs;
       });
@@ -56,15 +67,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       if (filtered.length > 0) {
         setCurrentSessionId(filtered[0].id);
       }
-
-      // Load settings from localStorage
-      const savedSettings = localStorage.getItem("workspace_settings");
-      if (savedSettings) {
-        setSettings(prev => ({ ...prev, ...JSON.parse(savedSettings) }));
-      }
+      isInitialized.current = true;
     };
     load();
-  }, [settings.retentionDays]);
+  }, []);
 
   const updateSettings = useCallback((updates: Partial<GlobalSettings>) => {
     setSettings(prev => {
@@ -89,11 +95,15 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     return newSession;
   }, [model]);
 
-  const updateSession = useCallback((id: string, updates: Partial<ChatSession>) => {
+  const updateSession = useCallback((id: string, updates: Partial<ChatSession> | ((prev: ChatSession) => Partial<ChatSession>)) => {
     setSessions(prev => {
-      const updated = prev.map(s => s.id === id ? { ...s, ...updates, updatedAt: new Date().toISOString() } : s);
-      const target = updated.find(s => s.id === id);
-      if (target) dbSaveSession(target);
+      const updated = prev.map(s => {
+        if (s.id !== id) return s;
+        const resolvedUpdates = typeof updates === "function" ? updates(s) : updates;
+        const newSession = { ...s, ...resolvedUpdates, updatedAt: new Date().toISOString() };
+        dbSaveSession(newSession);
+        return newSession;
+      });
       return updated.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
     });
   }, []);

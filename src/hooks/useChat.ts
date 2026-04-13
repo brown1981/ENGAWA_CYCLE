@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo, useRef } from "react";
-import { ChatMessage, ChatRole } from "@/lib/types";
+import { useState, useCallback, useMemo } from "react";
+import { ChatMessage } from "@/lib/types";
 import { useChatContext } from "@/contexts/ChatContext";
 
 export function useChat() {
@@ -41,7 +41,7 @@ export function useChat() {
 
     let currentText = "";
     const chars = Array.from(fullText);
-    const msPerChar = settings.typingSpeed / 2; // シンプルな調整
+    const msPerChar = settings.typingSpeed / 2;
 
     for (let char of chars) {
       currentText += char;
@@ -54,10 +54,11 @@ export function useChat() {
   }, [settings.typingSpeed]);
 
   const updateAssistantMessage = useCallback((sessionId: string, messageId: string, content: string) => {
-    updateSession(sessionId, {
-      messages: messages.map(m => m.id === messageId ? { ...m, content } : m)
-    });
-  }, [messages, updateSession]);
+    // 関数型アップデートを使用して、常に最新の messages 配列に対して更新を行う
+    updateSession(sessionId, (prev) => ({
+      messages: prev.messages.map(m => m.id === messageId ? { ...m, content } : m)
+    }));
+  }, [updateSession]);
 
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim()) return;
@@ -78,10 +79,13 @@ export function useChat() {
       createdAt: new Date().toISOString(),
     };
 
-    const updatedMessages = [...targetSession.messages, userMessage];
-    updateSession(targetSession.id, { 
-      messages: updatedMessages,
-      title: targetSession.messages.length === 0 ? content.slice(0, 20) : targetSession.title
+    // UIを即座に更新
+    updateSession(targetSession.id, (prev) => {
+      const updatedMessages = [...prev.messages, userMessage];
+      return { 
+        messages: updatedMessages,
+        title: prev.messages.length === 0 ? content.slice(0, 20) : prev.title
+      };
     });
 
     setIsLoading(true);
@@ -95,8 +99,8 @@ export function useChat() {
           "Authorization": `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          messages: updatedMessages,
-          model: targetSession.model || model,
+          messages: [...(targetSession?.messages || []), userMessage],
+          model: targetSession?.model || model,
         }),
       });
 
@@ -116,12 +120,11 @@ export function useChat() {
 
       // Phase 3: タイピングアニメーションを適用
       if (settings.typingSpeed > 0) {
-        // 先に空のメッセージ器を置く
         const placeholderMsg = { ...assistantMessage, content: "" };
-        updateSession(targetSession.id, { messages: [...updatedMessages, placeholderMsg] });
+        updateSession(targetSession.id, (prev) => ({ messages: [...prev.messages, placeholderMsg] }));
         await animateText(data.content, targetSession.id, assistantMessageId);
       } else {
-        updateSession(targetSession.id, { messages: [...updatedMessages, assistantMessage] });
+        updateSession(targetSession.id, (prev) => ({ messages: [...prev.messages, assistantMessage] }));
       }
     } catch (err: any) {
       setError(err.message || "予期せぬエラーが発生しました");
@@ -155,6 +158,3 @@ export function useChat() {
     streamingContent
   };
 }
-
-// 注意: この実装では setSessions が外部スコープにないため、animateText 内で updateSession を再帰的に呼ぶ必要があります。
-// 実際の実装整合性を保つため、Context 側を拡張するか、このフック内で完結させます。
