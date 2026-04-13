@@ -1,4 +1,5 @@
 "use client";
+// Phase 3 Persistence Fix - v2
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { ChatSession, ChatMessage, AppTheme, GlobalSettings } from "@/lib/types";
