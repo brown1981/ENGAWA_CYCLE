@@ -54,15 +54,10 @@ export function useChat() {
   }, [settings.typingSpeed]);
 
   const updateAssistantMessage = useCallback((sessionId: string, messageId: string, content: string) => {
-    setSessions(prev => {
-      // ChatContext内部のセッションリストを更新するロジックの模倣（本来はContext側のupdateSessionを介すべきだが同期の問題を避けるため直接計算）
-      // 実際には updateSession を呼ぶ。
-      return prev; 
-    });
     updateSession(sessionId, {
-      messages: currentSession?.messages.map(m => m.id === messageId ? { ...m, content } : m) || []
+      messages: messages.map(m => m.id === messageId ? { ...m, content } : m)
     });
-  }, [currentSession, updateSession]);
+  }, [messages, updateSession]);
 
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim()) return;
