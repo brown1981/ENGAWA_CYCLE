@@ -24,20 +24,27 @@ export type ModelOption = {
   id: string;
   name: string;
   description: string;
-  tier: "light" | "deep" | "search"; // Phase 3 分類
 };
 
+// Phase 3 Final Evolution: 隠し設定としてモデルを保持
 export const OPENAI_MODELS: ModelOption[] = [
-  { id: "gpt-4o-mini", name: "Light Intelligence", description: "Fast & cost-effective for daily tasks.", tier: "light" },
-  { id: "gpt-4o", name: "Deep Reasoning", description: "Smartest capabilities for complex problems.", tier: "deep" },
-  { id: "gpt-4o-search-preview", name: "Search (OpenAI Native)", description: "Reasoning with live web access.", tier: "search" },
+  { 
+    id: "gpt-4o-search-preview", 
+    name: "Deep Performance", 
+    description: "Highest intelligence with autonomous search." 
+  },
+  { 
+    id: "gpt-4o-mini-search-preview", 
+    name: "Light & Swift", 
+    description: "Fast responses with autonomous search." 
+  },
 ];
 
 export type AppTheme = "pure-black" | "glass" | "paper";
 
 export type GlobalSettings = {
   theme: AppTheme;
-  typingSpeed: number; // 0 to 100 (0 = instant, 100 = slow/rhythmic)
-  retentionDays: number; // 0 = session only, 365+ = permanent
+  typingSpeed: number; // 0 to 100
+  retentionDays: number;
   autoSearch: boolean;
 };

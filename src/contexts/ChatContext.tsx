@@ -33,7 +33,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [apiKey, setApiKey] = useState<string>("");
-  const [model, setModel] = useState<string>("gpt-4o");
+  const [model, setModel] = useState<string>("gpt-4o-search-preview");
   const [settings, setSettings] = useState<GlobalSettings>(DEFAULT_SETTINGS);
   const isInitialized = useRef(false);
 

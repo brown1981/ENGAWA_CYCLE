@@ -1,7 +1,7 @@
 "use client";
 
-import { X, Key, Box, ShieldCheck, Palette, Zap, History } from "lucide-react";
-import { OPENAI_MODELS, AppTheme, GlobalSettings } from "@/lib/types";
+import { X, Key, ShieldCheck, Palette, Zap, History, Cpu } from "lucide-react";
+import { OPENAI_MODELS, AppTheme } from "@/lib/types";
 import { useChatContext } from "@/contexts/ChatContext";
 
 interface SettingsModalProps {
@@ -41,6 +41,30 @@ export function SettingsModal({
         </div>
 
         <div className="space-y-8 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+          {/* Intelligence Engine Section (Moved from Header) */}
+          <section className="space-y-3">
+            <label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-30 flex items-center gap-2">
+              <Cpu size={12} /> Intelligence Engine
+            </label>
+            <div className="grid grid-cols-1 gap-2">
+              {OPENAI_MODELS.map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => setModel(m.id)}
+                  className={`
+                    flex flex-col items-start px-5 py-3 rounded-2xl border transition-all text-left
+                    ${model === m.id 
+                      ? "bg-accent/5 border-accent ring-1 ring-accent" 
+                      : "bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 opacity-60 hover:opacity-100"}
+                  `}
+                >
+                  <span className="text-sm font-bold tracking-tight">{m.name}</span>
+                  <span className="text-[10px] opacity-40">{m.description}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+
           {/* API Key Section */}
           <section className="space-y-3">
             <label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-30 flex items-center gap-2">
@@ -55,7 +79,7 @@ export function SettingsModal({
             />
             <div className="flex items-center gap-2 mt-1 text-[10px] opacity-30">
               <ShieldCheck size={10} />
-              <span>In-memory only. Never persisted.</span>
+              <span>In-memory only.</span>
             </div>
           </section>
 
@@ -98,7 +122,7 @@ export function SettingsModal({
             />
             <div className="flex justify-between text-[10px] opacity-40 font-medium">
               <span>Instant</span>
-              <span>Emotional / Slow</span>
+              <span>Rhythmic</span>
             </div>
           </section>
 
@@ -112,7 +136,7 @@ export function SettingsModal({
               onChange={(e) => updateSettings({ retentionDays: parseInt(e.target.value) })}
               className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm focus:outline-none appearance-none cursor-pointer"
             >
-              <option value={0}>Forget immediately (Incognito)</option>
+              <option value={0}>Forget immediately</option>
               <option value={7}>7 Days</option>
               <option value={30}>30 Days</option>
               <option value={365}>Forever (Local)</option>
