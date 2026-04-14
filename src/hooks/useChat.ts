@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { ChatMessage, ChatSession } from "@/lib/types";
 import { useChatContext } from "@/contexts/ChatContext";
 
@@ -12,7 +12,6 @@ export function useChat() {
     createSession: contextCreateSession,
     apiKey,
     model,
-    setModel,
     settings
   } = useChatContext();
 
@@ -21,6 +20,7 @@ export function useChat() {
   const [streamingContent, setStreamingContent] = useState("");
   
   const abortControllerRef = useRef<AbortController | null>(null);
+  const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const currentSession = sessions.find(s => s.id === currentSessionId);
   const messages = currentSession?.messages || [];
@@ -29,8 +29,13 @@ export function useChat() {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
-      setIsLoading(false);
     }
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+      typingIntervalRef.current = null;
+    }
+    setIsLoading(false);
+    setStreamingContent("");
   }, []);
 
   const clearMessages = useCallback(() => {
@@ -38,6 +43,14 @@ export function useChat() {
       updateSession(currentSessionId, { messages: [] });
     }
   }, [currentSessionId, updateSession]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
+      if (abortControllerRef.current) abortControllerRef.current.abort();
+    };
+  }, []);
 
   const sendMessage = useCallback(async (content: string, image?: string | null) => {
     if (!content.trim() && !image) return;
@@ -58,7 +71,6 @@ export function useChat() {
       createdAt: new Date().toISOString(),
     };
 
-    // UIを即座に更新
     updateSession(targetSession.id, (prev) => {
       const updatedMessages = [...prev.messages, userMessage];
       return { 
@@ -71,7 +83,6 @@ export function useChat() {
     setError(null);
     setStreamingContent("");
 
-    // Initialize AbortController
     abortControllerRef.current = new AbortController();
 
     try {
@@ -108,12 +119,30 @@ export function useChat() {
 
       // シミュレーション：タイピングエフェクト
       let i = 0;
-      const interval = setInterval(() => {
-        setStreamingContent(prev => prev + data.content[i]);
+      const fullContent = data.content || "";
+      
+      if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
+      
+      typingIntervalRef.current = setInterval(() => {
+        if (!fullContent[i] && i > 0) {
+          if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
+          typingIntervalRef.current = null;
+          updateSession(targetSession!.id, (prev) => ({
+            messages: [...prev.messages, assistantMessage]
+          }));
+          setStreamingContent("");
+          setIsLoading(false);
+          abortControllerRef.current = null;
+          return;
+        }
+
+        setStreamingContent(prev => prev + (fullContent[i] || ""));
         i++;
-        if (i >= data.content.length) {
-          clearInterval(interval);
-          updateSession(targetSession.id, (prev) => ({
+        
+        if (i > fullContent.length) {
+          if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
+          typingIntervalRef.current = null;
+          updateSession(targetSession!.id, (prev) => ({
             messages: [...prev.messages, assistantMessage]
           }));
           setStreamingContent("");
@@ -124,23 +153,22 @@ export function useChat() {
 
     } catch (err: any) {
       if (err.name === 'AbortError') {
-        console.log("Generation aborted by user");
         return;
       }
       setError(err.message);
       setIsLoading(false);
       abortControllerRef.current = null;
     }
-  }, [apiKey, currentSession, contextCreateSession, model, updateSession, settings, stopGeneration]);
+  }, [apiKey, currentSession, contextCreateSession, model, updateSession, settings]);
 
   return {
     messages,
     sendMessage,
     stopGeneration,
     apiKey,
-    setApiKey: (key: string) => {}, // Managed via context now, but keep hook interface
+    setApiKey: () => {}, 
     model,
-    setModel,
+    setModel: () => {}, // Managed via context
     clearMessages,
     isLoading,
     error,

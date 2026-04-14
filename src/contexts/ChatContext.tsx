@@ -12,7 +12,7 @@ interface ChatContextType {
   createSession: (title?: string) => ChatSession;
   updateSession: (id: string, updates: Partial<ChatSession> | ((prev: ChatSession) => Partial<ChatSession>)) => void;
   removeSession: (id: string) => void;
-  apiKey: string; // Keep interface compatibility for now, but link to settings
+  apiKey: string;
   setApiKey: (key: string) => void;
   model: string;
   setModel: (model: string) => void;
@@ -36,57 +36,51 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<GlobalSettings>(DEFAULT_SETTINGS);
   const isInitialized = useRef(false);
 
-  // Computed API Key for backward compatibility
   const apiKey = settings.openaiKey || "";
 
-  // Helper for remote save
-  const syncToSupabase = useCallback(async (session: ChatSession, syncKey?: string, url?: string, anonKey?: string) => {
-    const supabase = getSupabase(url || settings.supabaseUrl, anonKey || settings.supabaseAnonKey);
-    const userId = syncKey || settings.syncKey;
-    if (!supabase || !userId) return;
+  // Helper for remote save - Refactored for Safety (v14)
+  const syncToSupabase = useCallback(async (session: ChatSession) => {
+    try {
+      const supabase = getSupabase(settings.supabaseUrl, settings.supabaseAnonKey);
+      const userId = settings.syncKey;
+      if (!supabase || !userId) return;
 
-    // Upcert session
-    await supabase.from('sessions').upsert({
-      id: session.id,
-      user_id: userId,
-      title: session.title,
-      model: session.model,
-      provider: session.provider,
-      updated_at: session.updatedAt
-    });
+      // Upsert session
+      const { error: sessionError } = await supabase.from('sessions').upsert({
+        id: session.id,
+        user_id: userId,
+        title: session.title,
+        model: session.model,
+        provider: session.provider,
+        updated_at: session.updatedAt
+      });
 
-    // Upsert messages (simple approach: sync all)
-    if (session.messages.length > 0) {
-      await supabase.from('messages').upsert(
-        session.messages.map(m => ({
-          id: m.id,
-          session_id: session.id,
-          role: m.role,
-          content: m.content,
-          created_at: m.createdAt
-        }))
-      );
+      if (sessionError) throw sessionError;
+
+      // Upsert messages
+      if (session.messages.length > 0) {
+        const { error: msgError } = await supabase.from('messages').upsert(
+          session.messages.map(m => ({
+            id: m.id,
+            session_id: session.id,
+            role: m.role,
+            content: m.content,
+            created_at: m.createdAt
+          }))
+        );
+        if (msgError) throw msgError;
+      }
+    } catch (e) {
+      // Silent catch to prevent UI freeze
+      console.warn("Supabase background sync failed:", e);
     }
   }, [settings.supabaseUrl, settings.supabaseAnonKey, settings.syncKey]);
 
-  const updateSettings = useCallback((updates: Partial<GlobalSettings>) => {
-    setSettings(prev => {
-      const next = { ...prev, ...updates };
-      localStorage.setItem("workspace_settings", JSON.stringify(next));
-      return next;
-    });
-  }, []);
-
-  const setApiKey = useCallback((key: string) => {
-    updateSettings({ openaiKey: key });
-  }, [updateSettings]);
-
-  // Load state from DB & LocalStorage on mount
+  // Load state on mount
   useEffect(() => {
     if (isInitialized.current) return;
 
     const load = async () => {
-      // 1. Load settings
       const savedSettings = localStorage.getItem("workspace_settings");
       let currentSettings = { ...DEFAULT_SETTINGS };
       if (savedSettings) {
@@ -95,11 +89,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         setSettings(currentSettings);
       }
 
-      // 2. Load Local sessions
       const localData = await getAllSessions();
       let mergedData = localData;
 
-      // 3. Attempt to Pull from Supabase if configured
       const supabase = getSupabase(currentSettings.supabaseUrl, currentSettings.supabaseAnonKey);
       if (supabase && currentSettings.syncKey) {
         try {
@@ -109,7 +101,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             .eq('user_id', currentSettings.syncKey);
           
           if (remoteSessions) {
-            // Very simple merge: Remote wins by updatedAt
             const remoteMapped: ChatSession[] = remoteSessions.map(s => ({
               id: s.id,
               title: s.title,
@@ -124,13 +115,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
               })).sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
             }));
 
-            // Combine and Dedup
             const combined = [...localData];
             remoteMapped.forEach(rs => {
               const idx = combined.findIndex(ls => ls.id === rs.id);
               if (idx === -1) {
                 combined.push(rs);
-                dbSaveSession(rs); // Save to local too
+                dbSaveSession(rs);
               } else if (new Date(rs.updatedAt) > new Date(combined[idx].updatedAt)) {
                 combined[idx] = rs;
                 dbSaveSession(rs);
@@ -144,48 +134,26 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       }
 
       const sorted = mergedData.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-      const now = new Date();
-      const retentionMs = currentSettings.retentionDays * 24 * 60 * 60 * 1000;
-      const filtered = sorted.filter(s => {
-        if (currentSettings.retentionDays === 0) return false;
-        if (currentSettings.retentionDays >= 365) return true;
-        const diff = now.getTime() - new Date(s.updatedAt).getTime();
-        return diff < retentionMs;
-      });
-
-      setSessions(filtered);
-      if (filtered.length > 0) {
-        setCurrentSessionId(filtered[0].id);
+      setSessions(sorted);
+      if (sorted.length > 0) {
+        setCurrentSessionId(sorted[0].id);
       }
       isInitialized.current = true;
     };
     load();
   }, []);
 
-  // Phase 21.3: Real-time Supabase Listener
-  useEffect(() => {
-    const supabase = getSupabase(settings.supabaseUrl, settings.supabaseAnonKey);
-    if (!supabase || !settings.syncKey) return;
+  const updateSettings = useCallback((updates: Partial<GlobalSettings>) => {
+    setSettings(prev => {
+      const next = { ...prev, ...updates };
+      localStorage.setItem("workspace_settings", JSON.stringify(next));
+      return next;
+    });
+  }, []);
 
-    const channel = supabase
-      .channel('chat_sync')
-      .on('postgres_changes', { 
-        event: '*', 
-        schema: 'public', 
-        table: 'sessions', 
-        filter: `user_id=eq.${settings.syncKey}` 
-      }, async (payload) => {
-        // Simple strategy: reload list on external change
-        if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-          const fresh = await getAllSessions(); // Reload from local + remote logic could be complex, for now reload local
-        }
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [settings.supabaseUrl, settings.supabaseAnonKey, settings.syncKey]);
+  const setApiKey = useCallback((key: string) => {
+    updateSettings({ openaiKey: key });
+  }, [updateSettings]);
 
   const createSession = useCallback((title = "New Chat") => {
     const newSession: ChatSession = {
@@ -198,21 +166,29 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     };
     setSessions(prev => [newSession, ...prev]);
     setCurrentSessionId(newSession.id);
+    
+    // Side effects handled out of state update
     dbSaveSession(newSession);
     syncToSupabase(newSession);
+    
     return newSession;
   }, [model, syncToSupabase]);
 
   const updateSession = useCallback((id: string, updates: Partial<ChatSession> | ((prev: ChatSession) => Partial<ChatSession>)) => {
     setSessions(prev => {
-      const updated = prev.map(s => {
-        if (s.id !== id) return s;
-        const resolvedUpdates = typeof updates === "function" ? updates(s) : updates;
-        const newSession = { ...s, ...resolvedUpdates, updatedAt: new Date().toISOString() };
+      const target = prev.find(s => s.id === id);
+      if (!target) return prev;
+
+      const resolvedUpdates = typeof updates === "function" ? updates(target) : updates;
+      const newSession = { ...target, ...resolvedUpdates, updatedAt: new Date().toISOString() };
+      
+      // Schedule background tasks without blocking UI render
+      setTimeout(() => {
         dbSaveSession(newSession);
         syncToSupabase(newSession);
-        return newSession;
-      });
+      }, 0);
+
+      const updated = prev.map(s => s.id === id ? newSession : s);
       return updated.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
     });
   }, [syncToSupabase]);
@@ -220,7 +196,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const removeSession = useCallback(async (id: string) => {
     const supabase = getSupabase(settings.supabaseUrl, settings.supabaseAnonKey);
     if (supabase && settings.syncKey) {
-      await supabase.from('sessions').delete().eq('id', id);
+      try {
+        await supabase.from('sessions').delete().eq('id', id);
+      } catch (e) {}
     }
     
     await dbDeleteSession(id);
