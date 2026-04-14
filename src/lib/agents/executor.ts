@@ -8,17 +8,47 @@ import { supabase } from "@/lib/supabase";
  */
 export class AgentExecutor {
   private openai: OpenAI;
-  private requestId: string;
-  private maxLoops: number;
-  private agentId: string | null = null;
-  private agentInfo: any = null;
-  private extraKeys: { anthropicKey?: string; geminiKey?: string; searchKey?: string; } = {};
+  private recursionDepth: number;
 
-  constructor(apiKey: string, requestId: string, extraKeys: { anthropicKey?: string; geminiKey?: string; searchKey?: string; } = {}, maxLoops: number = 5) {
-    this.openai = new OpenAI({ apiKey, timeout: 25000 });
+  constructor(apiKey: string, requestId: string, extraKeys: { anthropicKey?: string; geminiKey?: string; searchKey?: string; } = {}, maxLoops: number = 5, recursionDepth: number = 0) {
+    this.openai = new OpenAI({ apiKey, timeout: 60000 }); // Delegation needs longer timeout
     this.requestId = requestId;
     this.extraKeys = extraKeys;
     this.maxLoops = maxLoops;
+    this.recursionDepth = recursionDepth;
+  }
+
+  /**
+   * 別のエージェントに仕事を依頼する
+   */
+  async delegate(role: string, instruction: string, model: string = "gpt-4o-mini") {
+    if (this.recursionDepth >= 3) {
+      throw new Error("Maximum delegation depth (3) reached. Preventing infinite loops.");
+    }
+
+    console.log(`[Executor:${this.requestId}] Delegating to ${role} (Depth: ${this.recursionDepth + 1})...`);
+    
+    // 自ネットワークに OpenAI Key を引き継ぐ
+    const subExecutor = new AgentExecutor(
+      (this.openai as any).apiKey, 
+      `${this.requestId}-sub-${role.toLowerCase()}`,
+      this.extraKeys,
+      this.maxLoops,
+      this.recursionDepth + 1
+    );
+
+    await subExecutor.loadAgent(role);
+    
+    // システムプロンプトを構築して実行
+    const subMessages = [
+      {
+        role: "system",
+        content: `あなたはエージェント「${subExecutor.agentInfo?.name || role}」です。役割: ${subExecutor.agentInfo?.instructions || "指示に従ってください"}`
+      },
+      { role: "user", content: instruction }
+    ];
+
+    return subExecutor.runV2(subMessages, model);
   }
 
   /**
@@ -59,7 +89,7 @@ export class AgentExecutor {
       const completion = await this.openai.chat.completions.create({
         model: model || "gpt-4o-mini",
         messages: history,
-        tools: toolSchemas as any, // Cast to any to bypass strict literal check on type: "function"
+        tools: toolSchemas as any, 
         tool_choice: "auto",
       });
 
@@ -72,7 +102,7 @@ export class AgentExecutor {
         return {
           id: completion.id,
           content: assistantMessage.content,
-          history // 必要に応じて最終的な履歴も返せる
+          history
         };
       }
 
@@ -87,6 +117,7 @@ export class AgentExecutor {
             const result = await tool.execute(args, {
               requestId: this.requestId,
               agentId: this.agentId,
+              delegate: this.delegate.bind(this),
               ...this.extraKeys
             });
             
@@ -96,7 +127,8 @@ export class AgentExecutor {
                 title: `${this.agentInfo?.name || "AI"}: ${toolCall.function.name}`,
                 description: `Arguments: ${JSON.stringify(args)} \nResult: ${JSON.stringify(result)}`,
                 assigned_to: this.agentId,
-                status: "done"
+                status: "done",
+                parent_request_id: this.requestId
               }]);
             }
 
@@ -121,6 +153,6 @@ export class AgentExecutor {
       loopCount++;
     }
 
-    throw new Error(`Maximum thinking loops (${this.maxLoops}) reached. Try a the more powerful GPT-4o model.`);
+    throw new Error(`Maximum thinking loops (${this.maxLoops}) reached.`);
   }
 }
