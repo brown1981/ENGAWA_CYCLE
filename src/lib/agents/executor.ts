@@ -8,6 +8,11 @@ import { supabase } from "@/lib/supabase";
  */
 export class AgentExecutor {
   private openai: OpenAI;
+  private requestId: string;
+  private maxLoops: number;
+  private agentId: string | null = null;
+  private agentInfo: any = null;
+  private extraKeys: { anthropicKey?: string; geminiKey?: string; searchKey?: string; } = {};
   private recursionDepth: number;
 
   constructor(apiKey: string, requestId: string, extraKeys: { anthropicKey?: string; geminiKey?: string; searchKey?: string; } = {}, maxLoops: number = 5, recursionDepth: number = 0) {
