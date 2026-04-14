@@ -59,12 +59,12 @@ export default function Home() {
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       <div className="flex-1 flex flex-col h-full relative">
-        <header className="flex justify-between items-center px-10 py-8 z-10 sticky top-0 bg-background/60 backdrop-blur-xl border-b border-border/40">
-          <button onClick={() => setIsSidebarOpen(true)} className="p-2.5 opacity-40 hover:opacity-100 hover:bg-secondary rounded-lg liquid-transition active:scale-95"><MessageSquare size={18} /></button>
+        <header className="flex justify-between items-center px-10 py-8 z-10 sticky top-0 bg-background/40 backdrop-blur-3xl border-b border-border/20">
+          <button onClick={() => setIsSidebarOpen(true)} className="p-2.5 opacity-30 hover:opacity-100 hover:bg-secondary rounded-lg liquid-transition active:scale-95"><MessageSquare size={17} /></button>
           <div className="flex gap-6 items-center">
-            {messages.length > 0 && <div className="text-[10px] opacity-30 font-bold uppercase tracking-[0.4em] mr-4 select-none font-heading">{messages.length} Thoughts</div>}
-            <button onClick={() => createSession()} className="p-2.5 opacity-40 hover:opacity-100 hover:bg-secondary rounded-lg liquid-transition active:scale-95"><Plus size={18} /></button>
-            <button onClick={() => setIsSettingsOpen(true)} className="p-2.5 opacity-40 hover:opacity-100 hover:bg-secondary rounded-lg liquid-transition active:scale-95"><Settings size={18} /></button>
+            {messages.length > 0 && <div className="text-[9px] opacity-25 font-bold uppercase tracking-[0.5em] mr-4 select-none font-heading">{messages.length} Strategic Thoughts</div>}
+            <button onClick={() => createSession()} className="p-2.5 opacity-30 hover:opacity-100 hover:bg-secondary rounded-lg liquid-transition active:scale-95"><Plus size={17} /></button>
+            <button onClick={() => setIsSettingsOpen(true)} className="p-2.5 opacity-30 hover:opacity-100 hover:bg-secondary rounded-lg liquid-transition active:scale-95"><Settings size={17} /></button>
           </div>
         </header>
 
@@ -87,11 +87,11 @@ export default function Home() {
             messages.map((m, idx) => {
               return (
                 <div key={m.id} className={`group flex flex-col space-y-4 animate-float-in ${m.role === 'user' ? 'items-end' : 'items-start'}`} style={{ animationDelay: `${idx * 0.05}s` }}>
-                  <div className={`chat-bubble-p px-6 py-4 rounded-[var(--radius)] shadow-sm max-w-[90%] liquid-transition ${m.role === 'user' ? 'bg-accent text-white rounded-tr-none shadow-accent/15' : 'bg-card text-card-foreground rounded-tl-none border border-border/60 backdrop-blur-sm'}`}>
+                  <div className={`chat-bubble-p px-6 py-4.5 rounded-[calc(var(--radius)*0.8)] shadow-sm max-w-[88%] liquid-transition ${m.role === 'user' ? 'bg-accent text-accent-foreground rounded-tr-none' : 'bg-card text-card-foreground rounded-tl-none border border-border/40 backdrop-blur-sm'}`}>
                     {m.content.includes("data:image") && (
-                       <img src={m.content.match(/data:image\/[^;]+;base64,[^ \n]+/)?.[0]} alt="Attached" className="rounded-xl mb-3 max-h-72 object-cover w-full shadow-xl" />
+                       <img src={m.content.match(/data:image\/[^;]+;base64,[^ \n]+/)?.[0]} alt="Attached" className="rounded-lg mb-3.5 max-h-72 object-cover w-full shadow-lg" />
                     )}
-                    <div className="whitespace-pre-wrap leading-[1.6]">{m.content.replace(/data:image\/[^;]+;base64,[^ \n]+/, "").trim()}</div>
+                    <div className="whitespace-pre-wrap leading-[1.65] text-sm md:text-[15px]">{m.content.replace(/data:image\/[^;]+;base64,[^ \n]+/, "").trim()}</div>
                   </div>
                   <div className="flex gap-6 px-6 opacity-0 group-hover:opacity-30 liquid-transition">
                     <button onClick={() => navigator.clipboard.writeText(m.content)} className="hover:opacity-100"><Copy size={13} /></button>
@@ -104,8 +104,8 @@ export default function Home() {
           
           {isLoading && (
             <div className="flex items-start animate-float-in">
-              <div className="bg-card px-6 py-4 rounded-[var(--radius)] rounded-tl-none border border-border/40 animate-synapsing backdrop-blur-xl">
-                <span className="text-[9px] font-bold tracking-[0.4em] uppercase opacity-40 font-heading">Processing Intelligence</span>
+              <div className="bg-card px-5 py-3 rounded-[calc(var(--radius)*0.6)] rounded-tl-none border border-border/30 animate-synapsing backdrop-blur-3xl">
+                <span className="text-[9px] font-bold tracking-[0.4em] uppercase opacity-25 font-heading">Processing Strategy</span>
               </div>
             </div>
           )}
@@ -128,15 +128,16 @@ export default function Home() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                 placeholder={attachedImage ? "画像についての指示..." : "戦略を入力..."}
-                className="w-full bg-card/95 backdrop-blur-3xl border border-border/60 rounded-[var(--radius)] px-6 py-5 pr-32 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.3)] focus:outline-none focus:ring-1 focus:ring-accent/40 liquid-transition resize-none min-h-[64px] max-h-48 no-scrollbar disabled:opacity-50 text-sm"
+                className="w-full bg-card/90 backdrop-blur-3xl border border-border/40 rounded-[calc(var(--radius)*1.2)] px-8 py-5 pr-32 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] focus:outline-none focus:ring-1 focus:ring-accent/30 liquid-transition resize-none min-h-[60px] max-h-48 no-scrollbar disabled:opacity-50 text-sm"
                 rows={1}
                 disabled={isLoading}
               />
-              <div className="absolute right-4 bottom-4 flex gap-3">
+              <div className="absolute right-5 bottom-4 flex gap-3.5">
                 <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".txt,.md,image/*" disabled={isLoading} />
-                <button onClick={() => fileInputRef.current?.click()} className={`p-3 liquid-transition rounded-xl ${attachedImage ? 'text-accent opacity-100' : 'opacity-20 hover:opacity-100 hover:bg-foreground/5'}`} disabled={isLoading}><Paperclip size={18} /></button>
-                <button onClick={handleSend} className={`p-3.5 liquid-transition hover:scale-105 active:scale-95 shadow-xl ${isLoading ? 'bg-destructive' : 'bg-accent'} text-white rounded-xl disabled:opacity-50`}>
-                  {isLoading ? <Square size={16} fill="currentColor" /> : <Send size={16} />}
+                <button onClick={() => fileInputRef.current?.click()} className={`p-2.5 liquid-transition rounded-lg ${attachedImage ? 'text-accent opacity-100' : 'opacity-15 hover:opacity-100'}`} disabled={isLoading}><Paperclip size={18} /></button>
+                <button onClick={handleSend} className={`p-3 relative group liquid-transition active:scale-95 ${isLoading ? 'bg-destructive' : 'bg-accent'} text-accent-foreground rounded-xl disabled:opacity-50`}>
+                  {isLoading ? <Square size={15} fill="currentColor" /> : <Send size={15} />}
+                  <div className="absolute inset-0 rounded-xl bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </button>
               </div>
             </div>

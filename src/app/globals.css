@@ -27,49 +27,49 @@
   }
 
   .dark, [data-theme="pure-black"], .theme-root.pure-black {
-    --background: 0 0% 0% !important; /* Ensure absolute black */
+    --background: 0 0% 0% !important;
     --foreground: 0 0% 98%;
-    --card: 0 0% 3%;
+    --card: 0 0% 4%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3%;
+    --popover: 0 0% 4%;
     --popover-foreground: 0 0% 98%;
     --primary: 0 0% 98%;
     --primary-foreground: 0 0% 5%;
-    --secondary: 0 0% 8%;
+    --secondary: 0 0% 10%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 8%;
-    --muted-foreground: 0 0% 60%;
-    --accent: 212 100% 50%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 55%;
+    --accent: 215 100% 50%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 12%;
-    --input: 0 0% 12%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
     --ring: 0 0% 80%;
   }
 
   .theme-root.paper {
-    --background: 36 33% 96%;
-    --foreground: 20 10% 8%;
+    --background: 35 30% 96% !important;
+    --foreground: 20 10% 5%;
     --card: 0 0% 100%;
-    --card-foreground: 20 10% 8%;
+    --card-foreground: 20 10% 5%;
     --popover: 0 0% 100%;
-    --popover-foreground: 20 10% 8%;
-    --primary: 20 10% 8%;
+    --popover-foreground: 20 10% 5%;
+    --primary: 20 10% 5%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 36 30% 90%;
-    --secondary-foreground: 20 10% 8%;
-    --muted: 36 20% 85%;
+    --secondary: 35 25% 90%;
+    --secondary-foreground: 20 10% 5%;
+    --muted: 35 20% 85%;
     --muted-foreground: 20 10% 40%;
-    --accent: 212 100% 45%;
+    --accent: 215 100% 42%;
     --accent-foreground: 0 0% 100%;
-    --border: 36 20% 80%;
-    --input: 36 20% 80%;
-    --ring: 20 10% 8%;
+    --border: 35 15% 82%;
+    --input: 35 15% 82%;
+    --ring: 20 10% 5%;
   }
 
   .theme-root.glass {
-    --background: 240 10% 98%;
+    --background: 240 10% 99% !important;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
@@ -81,7 +81,7 @@
     --secondary-foreground: 240 5.9% 10%;
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
-    --accent: 250 100% 60%;
+    --accent: 245 100% 64%;
     --accent-foreground: 0 0% 100%;
     --border: 240 5.9% 88%;
     --input: 240 5.9% 88%;
@@ -91,7 +91,7 @@
 
 @layer base {
   :root {
-    --radius: 1.75rem; /* Unified for premium balance */
+    --radius: 1.25rem; /* More professional, less 'bubbly' radius */
   }
 }
 
@@ -99,11 +99,17 @@
   * {
     border-color: hsl(var(--border));
   }
+  .theme-root {
+    background-color: hsl(var(--background));
+    min-height: 100vh;
+    transition: background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
     font-family: var(--font-inter), -apple-system, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
-    transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s ease;
+    transition: color 0.5s ease;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-outfit), var(--font-inter), sans-serif;
