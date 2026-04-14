@@ -60,9 +60,11 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             content: m.content,
             created_at: m.createdAt
           }))
-        ).catch(() => {});
+        );
       }
-    } catch (e) { console.warn("Sync failed:", e); }
+    } catch (e) {
+      console.warn("Sync failed:", e);
+    }
   }, [settings.supabaseUrl, settings.supabaseAnonKey, settings.syncKey]);
 
   useEffect(() => {

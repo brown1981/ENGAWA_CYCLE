@@ -52,7 +52,7 @@ export function useChat() {
       return;
     }
 
-    // Atomic Session Preparation (Phase 31)
+    // Phase 32: Correct Atomic Preparation
     let targetSession = currentSession;
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
@@ -60,6 +60,8 @@ export function useChat() {
       content: image ? `${image}\n\n${content}` : content,
       createdAt: new Date().toISOString(),
     };
+
+    let payloadMessages: ChatMessage[] = [];
 
     if (!targetSession) {
       targetSession = {
@@ -70,17 +72,20 @@ export function useChat() {
         messages: [userMessage],
         updatedAt: new Date().toISOString(),
       };
-      upsertSession(targetSession); // Create and Add first message atomically
+      upsertSession(targetSession);
+      payloadMessages = [userMessage]; // Just the new message for a new session
     } else {
-      // Normal update for existing session
-      updateSession(targetSession.id, (prev) => ({
-        messages: [...prev.messages, userMessage]
-      }));
+      payloadMessages = [...targetSession.messages, userMessage];
+      updateSession(targetSession.id, { messages: payloadMessages });
     }
 
     setIsLoading(true);
     setError(null);
     setStreamingContent("");
+    
+    // Debug logging for troubleshooting (Phase 32)
+    console.log(`[useChat] Sending ${payloadMessages.length} messages to model: ${model}`);
+    
     abortControllerRef.current = new AbortController();
 
     try {
@@ -93,8 +98,8 @@ export function useChat() {
           ...(settings.geminiKey ? { "X-Gemini-Key": settings.geminiKey } : {}),
         },
         body: JSON.stringify({
-          messages: [...(targetSession?.messages || []), userMessage],
-          model: targetSession?.model || model,
+          messages: payloadMessages, // Corrected: No more duplication
+          model: model,
           image: image,
           customInstructions: settings.customInstructions
         }),
@@ -119,9 +124,8 @@ export function useChat() {
       if (typingIntervalRef.current) { clearInterval(typingIntervalRef.current); typingIntervalRef.current = null; }
       
       if (!fullContent) {
-        updateSession(targetSession.id, (prev) => ({ messages: [...prev.messages, assistantMessage] }));
+        updateSession(targetSession!.id, (prev) => ({ messages: [...prev.messages, assistantMessage] }));
         setIsLoading(false);
-        abortControllerRef.current = null;
         return;
       }
 
@@ -144,7 +148,6 @@ export function useChat() {
       setIsLoading(false);
       abortControllerRef.current = null;
       setStreamingContent("");
-      // Force log error for user visibility
       console.error("Chat Error:", err);
     }
   }, [apiKey, currentSession, upsertSession, updateSession, model, settings]);
