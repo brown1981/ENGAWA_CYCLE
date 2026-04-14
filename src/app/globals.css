@@ -51,13 +51,13 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-inter), -apple-system, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
-    transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s estate;
+    transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s ease;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-outfit), var(--font-inter), sans-serif;
