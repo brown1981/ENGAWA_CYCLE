@@ -156,7 +156,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     setSessions(prev => prev.filter(s => s.id !== id));
     if (currentSessionId === id) setCurrentSessionId(null);
     const supabase = getSupabase(settings.supabaseUrl, settings.supabaseAnonKey);
-    if (supabase && settings.syncKey) await supabase.from('sessions').delete().eq('id', id).catch(() => {});
+    if (supabase && settings.syncKey) await supabase.from('sessions').delete().eq('id', id);
   }, [currentSessionId, settings.supabaseUrl, settings.supabaseAnonKey, settings.syncKey]);
 
   return (
