@@ -38,143 +38,111 @@ export function SettingsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-black/40 backdrop-blur-md animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-500">
       <div 
-        className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-[2.5rem] p-8 shadow-2xl border border-zinc-200 dark:border-zinc-800 animate-in zoom-in-95 duration-300"
+        className="w-full max-w-lg bg-card/95 backdrop-blur-3xl rounded-[3rem] p-10 shadow-[0_32px_128px_-32px_rgba(0,0,0,0.8)] border border-border/40 animate-in zoom-in-95 duration-500 liquid-transition"
       >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold tracking-tight">Settings</h2>
+        <div className="flex justify-between items-center mb-10">
+          <h2 className="text-2xl font-bold tracking-tight font-heading">OS Preferences</h2>
           <button 
             type="button"
             onClick={onClose}
-            className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+            className="p-3 hover:bg-secondary rounded-2xl liquid-transition active:scale-90"
           >
             <X size={20} className="opacity-40" />
           </button>
         </div>
 
-        <div className="space-y-8 max-h-[65vh] overflow-y-auto pr-2 custom-scrollbar pb-4 text-zinc-900 dark:text-zinc-100">
+        <div className="space-y-10 max-h-[60vh] overflow-y-auto pr-4 no-scrollbar pb-6 text-card-foreground">
           
           {/* Phase 6: AI Personality */}
-          <section className="space-y-3">
-            <label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-30 flex items-center gap-2">
-              <Sparkles size={12} /> AI Personality
+          <section className="space-y-4">
+            <label className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-30 flex items-center gap-2 font-heading">
+              <Sparkles size={12} /> Personality Core
             </label>
             <textarea
               value={settings.customInstructions || ""}
               onChange={(e) => updateSettings({ customInstructions: e.target.value })}
-              placeholder="例：あなたは論理的で簡潔な回答を好む、テック系コンサルタントです。日本語で回答してください。"
-              className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-accent transition-all resize-none min-h-[100px] leading-relaxed"
+              placeholder="Define high-level strategic constraints..."
+              className="w-full bg-secondary/50 border border-border/40 rounded-[1.8rem] px-6 py-5 text-sm focus:outline-none focus:ring-1 focus:ring-accent/40 liquid-transition resize-none min-h-[120px] leading-[1.7]"
             />
           </section>
 
           {/* Intelligence Engine */}
-          <section className="space-y-3">
-            <label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-30 flex items-center gap-2">
+          <section className="space-y-4">
+            <label className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-30 flex items-center gap-2 font-heading">
               <Cpu size={12} /> Intelligence Engine
             </label>
-            <div className="grid grid-cols-1 gap-2">
+            <div className="grid grid-cols-1 gap-3">
               {AVAILABLE_MODELS.map((m) => (
                 <button
                   key={m.id}
                   type="button"
                   onClick={() => setModel(m.id)}
                   className={`
-                    flex flex-col items-start px-5 py-3 rounded-2xl border transition-all text-left
+                    flex flex-col items-start px-6 py-4 rounded-2xl border liquid-transition text-left
                     ${model === m.id 
-                      ? "bg-accent/5 border-accent ring-1 ring-accent" 
-                      : "bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 opacity-60 hover:opacity-100"}
+                      ? "bg-accent/10 border-accent/40 ring-1 ring-accent/20" 
+                      : "bg-secondary/40 border-border/20 opacity-60 hover:opacity-100 hover:bg-secondary/60"}
                   `}
                 >
-                  <div className="flex justify-between w-full items-center">
-                    <span className="text-sm font-bold tracking-tight">{m.name}</span>
-                    <span className="text-[9px] px-2 py-0.5 bg-zinc-200 dark:bg-zinc-800 rounded-full opacity-50 font-bold uppercase tracking-wider">
+                  <div className="flex justify-between w-full items-center mb-1">
+                    <span className={`text-sm font-bold tracking-tight ${model === m.id ? "text-accent" : ""}`}>{m.name}</span>
+                    <span className="text-[8px] px-2 py-0.5 bg-secondary border border-border/40 rounded-full opacity-60 font-black uppercase tracking-widest">
                       {m.provider}
                     </span>
                   </div>
-                  <span className="text-[10px] opacity-40">{m.description}</span>
+                  <span className="text-[10px] opacity-40 leading-relaxed">{m.description}</span>
                 </button>
               ))}
             </div>
           </section>
 
-          {/* API Keys - Unified Persistence & Password Manager Optimized */}
-          <section className="space-y-4">
-            <label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-30 flex items-center gap-2">
-              <BrainCircuit size={12} /> Provider Keys
+          {/* API Keys */}
+          <section className="space-y-6">
+            <label className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-30 flex items-center gap-2 font-heading">
+              <BrainCircuit size={12} /> Strategic Access Keys
             </label>
             
-            <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-              <div className="space-y-1.5">
-                <div className="flex justify-between px-2">
-                  <span className="text-[9px] font-bold opacity-30">OPENAI</span>
-                  <a href="https://platform.openai.com/" target="_blank" className="text-[9px] opacity-20 hover:opacity-50 transition-opacity underline">Get Key</a>
+            <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+              {(['openai', 'anthropic', 'gemini'] as const).map((provider) => (
+                <div key={provider} className="space-y-2">
+                  <div className="flex justify-between px-2">
+                    <span className="text-[9px] font-black opacity-30 uppercase tracking-[0.2em]">{provider}</span>
+                  </div>
+                  <input
+                    type="password"
+                    autoComplete="current-password"
+                    value={settings[`${provider}Key` as keyof typeof settings] as string || ""}
+                    onChange={(e) => updateSettings({ [`${provider}Key`]: e.target.value })}
+                    placeholder="••••••••••••••••"
+                    className="w-full bg-secondary/40 border border-border/40 rounded-[1.2rem] px-6 py-4 text-xs focus:outline-none focus:ring-1 focus:ring-accent/40 liquid-transition"
+                  />
                 </div>
-                <input
-                  type="password"
-                  name="openai_key"
-                  autoComplete="current-password"
-                  value={settings.openaiKey || ""}
-                  onChange={(e) => updateSettings({ openaiKey: e.target.value })}
-                  placeholder="sk-..."
-                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-5 py-3.5 text-xs focus:outline-none focus:ring-1 focus:ring-accent transition-all"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex justify-between px-2">
-                  <span className="text-[9px] font-bold opacity-30">ANTHROPIC</span>
-                  <a href="https://console.anthropic.com/" target="_blank" className="text-[9px] opacity-20 hover:opacity-50 transition-opacity underline">Get Key</a>
-                </div>
-                <input
-                  type="password"
-                  name="anthropic_key"
-                  autoComplete="current-password"
-                  value={settings.anthropicKey || ""}
-                  onChange={(e) => updateSettings({ anthropicKey: e.target.value })}
-                  placeholder="sk-ant-..."
-                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-5 py-3.5 text-xs focus:outline-none focus:ring-1 focus:ring-accent transition-all"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex justify-between px-2">
-                  <span className="text-[9px] font-bold opacity-30">GOOGLE</span>
-                  <a href="https://aistudio.google.com/" target="_blank" className="text-[9px] opacity-20 hover:opacity-50 transition-opacity underline">Get Key Free</a>
-                </div>
-                <input
-                  type="password"
-                  name="gemini_key"
-                  autoComplete="current-password"
-                  value={settings.geminiKey || ""}
-                  onChange={(e) => updateSettings({ geminiKey: e.target.value })}
-                  placeholder="AIza..."
-                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-5 py-3.5 text-xs focus:outline-none focus:ring-1 focus:ring-accent transition-all"
-                />
-              </div>
+              ))}
             </form>
           </section>
 
           {/* Cloud Sync Section */}
-          <section className="space-y-4 p-5 bg-zinc-50 dark:bg-zinc-950/50 rounded-3xl border border-dashed border-zinc-200 dark:border-zinc-800">
-            <label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-30 flex items-center gap-2">
-              <Cloud size={12} /> Cloud Sync (Supabase)
+          <section className="space-y-5 p-7 bg-secondary/30 rounded-[2.5rem] border border-dashed border-border/60">
+            <label className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-30 flex items-center gap-2 font-heading">
+              <Cloud size={12} /> Data Synchronization
             </label>
             
-            <div className="space-y-3">
+            <div className="space-y-4">
               <input
                 type="text"
                 value={settings.supabaseUrl || ""}
                 onChange={(e) => updateSettings({ supabaseUrl: e.target.value })}
-                placeholder="Supabase Project URL"
-                className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-xs focus:outline-none shadow-sm"
+                placeholder="Endpoint URL"
+                className="w-full bg-card border border-border/40 rounded-2xl px-5 py-4 text-xs focus:outline-none liquid-transition"
               />
               <input
                 type="password"
                 value={settings.supabaseAnonKey || ""}
                 onChange={(e) => updateSettings({ supabaseAnonKey: e.target.value })}
-                placeholder="Supabase Anon Key"
-                className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-xs focus:outline-none shadow-sm"
+                placeholder="Public Access Key"
+                className="w-full bg-card border border-border/40 rounded-2xl px-5 py-4 text-xs focus:outline-none liquid-transition"
                 autoComplete="current-password"
               />
               <div className="relative">
@@ -182,19 +150,18 @@ export function SettingsModal({
                   type="text"
                   value={settings.syncKey || ""}
                   onChange={(e) => updateSettings({ syncKey: e.target.value })}
-                  placeholder="Sync Key (Enter or Generate)"
-                  className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-xs focus:outline-none pr-20 shadow-sm"
+                  placeholder="Global Workspace Key"
+                  className="w-full bg-card border border-border/40 rounded-2xl px-5 py-4 text-xs focus:outline-none pr-28 liquid-transition"
                 />
-                <div className="absolute right-2 top-1.5 flex gap-1">
+                <div className="absolute right-2 top-2 flex gap-1">
                   {settings.syncKey && (
-                    <button onClick={handleCopy} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg opacity-40">
+                    <button onClick={handleCopy} className="p-2 hover:bg-secondary rounded-xl liquid-transition opacity-40">
                       {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
                     </button>
                   )}
                   <button 
                     onClick={generateSyncKey}
-                    className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg opacity-40"
-                    title="Generate New Key"
+                    className="p-2 hover:bg-secondary rounded-xl liquid-transition opacity-40"
                   >
                     <RefreshCw size={14} />
                   </button>
@@ -204,52 +171,35 @@ export function SettingsModal({
           </section>
 
           {/* Theme Section */}
-          <section className="space-y-3">
-            <label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-30 flex items-center gap-2">
-              <Palette size={12} /> Theme Selection
+          <section className="space-y-4">
+            <label className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-30 flex items-center gap-2 font-heading">
+              <Palette size={12} /> Environmental Aesthetic
             </label>
-            <div className="flex gap-4 p-4 bg-zinc-50 dark:bg-zinc-950 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+            <div className="flex gap-4 p-5 bg-secondary/30 rounded-[2.5rem] border border-border/40">
               {(["pure-black", "glass", "paper"] as AppTheme[]).map((t) => (
                 <button
                   key={t}
                   type="button"
                   onClick={() => updateSettings({ theme: t })}
                   className={`
-                    flex-1 py-4 rounded-xl border transition-all flex flex-col items-center gap-2
-                    ${settings.theme === t ? "bg-accent/5 border-accent ring-1 ring-accent opacity-100" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 opacity-40 hover:opacity-80"}
+                    flex-1 py-5 rounded-[1.8rem] border liquid-transition flex flex-col items-center gap-3
+                    ${settings.theme === t ? "bg-accent/10 border-accent/40 ring-1 ring-accent/20 opacity-100" : "bg-card border-border/20 opacity-30 hover:opacity-100"}
                   `}
                 >
-                  <div className={`w-4 h-4 rounded-full ${t === 'pure-black' ? 'bg-black' : t === 'glass' ? 'bg-zinc-300' : 'bg-[#fdfaf6] border border-zinc-200'}`} />
-                  <span className="text-[9px] font-bold uppercase tracking-widest">{t}</span>
+                  <div className={`w-5 h-5 rounded-full shadow-inner ${t === 'pure-black' ? 'bg-black' : t === 'glass' ? 'bg-zinc-400' : 'bg-[#fdfaf6] border border-border/60'}`} />
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em]">{t}</span>
                 </button>
               ))}
             </div>
           </section>
-
-          {/* Retention Section */}
-          <section className="space-y-3">
-            <label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-30 flex items-center gap-2">
-              <History size={12} /> History Retention
-            </label>
-            <select 
-              value={settings.retentionDays}
-              onChange={(e) => updateSettings({ retentionDays: parseInt(e.target.value) })}
-              className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm focus:outline-none appearance-none cursor-pointer shadow-sm"
-            >
-              <option value={0}>Forget immediately</option>
-              <option value={7}>7 Days</option>
-              <option value={30}>30 Days</option>
-              <option value={365}>Forever (Local)</option>
-            </select>
-          </section>
         </div>
 
-        <div className="mt-8">
+        <div className="mt-10">
           <button
             onClick={onClose}
-            className="w-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 py-4 rounded-[1.5rem] font-bold text-sm hover:opacity-90 active:scale-95 transition-all shadow-xl shadow-black/10"
+            className="w-full bg-primary text-primary-foreground py-5 rounded-[2.2rem] font-bold text-xs uppercase tracking-widest hover:opacity-90 active:scale-[0.98] liquid-transition shadow-[0_20px_40px_-12px_rgba(255,255,255,0.1)]"
           >
-            Done
+            Authorize Changes
           </button>
         </div>
       </div>

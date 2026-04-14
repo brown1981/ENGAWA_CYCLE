@@ -124,22 +124,27 @@ export async function POST(req: Request) {
       return { role: m.role, content: textContent };
     });
 
+    // Phase 7: Advanced Agentic Loop using AgentExecutor
+    const { AgentExecutor } = await import("@/lib/agents/executor");
+    const executor = new AgentExecutor(openaiKey, requestId);
+    
+    // DBからマネージャーの情報を取得し、プロンプトを動的に生成
+    console.log(`[API:${requestId}] Loading Manager agent info...`);
+    const manager = await executor.loadAgent("Manager");
+    
     const AGENT_SYSTEM_PROMPT = `
 あなたは「Engawa Cycle」の優秀なAIエージェント、およびCEO直属の戦略官です。
-現在のタスク: ${customInstructions || "会社運営のサポート"}
+現在の役割: ${manager?.name || "Manager"} (${manager?.role || "Manager"})
+担当者指示書: ${manager?.instructions || "会社運営のサポート"}
 
 【行動指針】
 1. 思考の徹底: ツールを使う前に、まず何を知るべきか「計画」を立ててください。
 2. 観察と調整: ツール実行の結果を客観的に評価し、必要なら別の手段を模索してください。
 3. 最小のノイズ: 裏側の試行錯誤は社長に見せず、洗練された「最終回答」のみを丁寧に報告してください。
-4. 誠実さ: 分からないことやAPIエラーについては正直に報告し、解決策を提案してください。
+4. 自動記録: あなたの全ての重要な行動は、自動的に組織のタスクログに記録されます。
     `.trim();
 
     formattedMessages.unshift({ role: "system", content: AGENT_SYSTEM_PROMPT });
-
-    // Phase 6: Advanced Agentic Loop using AgentExecutor
-    const { AgentExecutor } = await import("@/lib/agents/executor");
-    const executor = new AgentExecutor(openaiKey, requestId);
     
     console.log(`[API:${requestId}] AgentExecutor.runV2 Start...`);
     const result = await executor.runV2(formattedMessages, model);

@@ -1,5 +1,6 @@
 import { OpenAI } from "openai";
 import { toolSchemas, tools } from "@/lib/tools";
+import { supabase } from "@/lib/supabase";
 
 /**
  * 🧠 Engawa Cycle - Agent Executor
@@ -9,11 +10,37 @@ export class AgentExecutor {
   private openai: OpenAI;
   private requestId: string;
   private maxLoops: number;
+  private agentId: string | null = null;
+  private agentInfo: any = null;
 
   constructor(apiKey: string, requestId: string, maxLoops: number = 5) {
     this.openai = new OpenAI({ apiKey, timeout: 25000 });
     this.requestId = requestId;
     this.maxLoops = maxLoops;
+  }
+
+  /**
+   * DBから特定のエージェント（役職）の情報をロードします
+   */
+  async loadAgent(role: string = "Manager") {
+    console.log(`[Executor:${this.requestId}] Loading agent with role: ${role}`);
+    const { data, error } = await supabase
+      .from("agents")
+      .select("*")
+      .eq("role", role)
+      .maybeSingle();
+
+    if (error) {
+      console.warn(`[Executor:${this.requestId}] Failed to load agent:`, error);
+      return null;
+    }
+
+    if (data) {
+      this.agentId = data.id;
+      this.agentInfo = data;
+      return data;
+    }
+    return null;
   }
 
   /**
@@ -56,6 +83,17 @@ export class AgentExecutor {
           try {
             const args = JSON.parse(toolCall.function.arguments);
             const result = await tool.execute(args);
+            
+            // Phase 7: 自動業務記録 (タスクログ)
+            if (this.agentId) {
+              await supabase.from("tasks").insert([{
+                title: `${this.agentInfo?.name || "AI"}: ${toolCall.function.name}`,
+                description: `Arguments: ${JSON.stringify(args)} \nResult: ${JSON.stringify(result)}`,
+                assigned_to: this.agentId,
+                status: "done"
+              }]);
+            }
+
             history.push({
               role: "tool",
               tool_call_id: toolCall.id,

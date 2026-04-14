@@ -2,87 +2,108 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #1d1d1f;
-  --accent: #0071e3;
-}
-
-/* Theme: Pure Black */
-.theme-root.pure-black {
-  --background: #000000;
-  --foreground: #f5f5f7;
-  --accent: #2997ff;
-}
-
-/* Theme: Glassmorphism */
-.theme-root.glass {
-  --background: #ffffff;
-  --foreground: #1d1d1f;
-  --accent: #5e5ce6;
-}
-.theme-root.glass body {
-  background: radial-gradient(circle at top right, rgba(94, 92, 230, 0.05), transparent),
-              radial-gradient(circle at bottom left, rgba(0, 113, 227, 0.05), transparent);
-}
-
-/* Theme: Paper */
-.theme-root.paper {
-  --background: #fdfaf6;
-  --foreground: #3a3a3c;
-  --accent: #a2845e;
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  transition: background 0.5s ease, color 0.5s ease;
-}
-
-/* Apple-style Typography Focus (Golden Ratio) */
-h1 {
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 1.1;
-}
-
-.chat-bubble {
-  font-size: 15px;
-  line-height: 1.618; /* Golden Ratio */
-  letter-spacing: -0.011em;
-  max-width: 85%;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #000000;
-    --foreground: #f5f5f7;
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 210 100% 50%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 0.75rem;
+  }
+
+  .dark, [data-theme="pure-black"], .theme-root.pure-black {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 210 100% 50%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
   }
 }
 
-/* Custom Scrollbar - Invisible & Minimal */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(128, 128, 128, 0.1);
-  border-radius: 10px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(128, 128, 128, 0.3);
-}
-
-/* Animations */
-@keyframes pulse-subtle {
-  0%, 100% { opacity: 0.1; }
-  50% { opacity: 0.2; }
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-inter), -apple-system, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s estate;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-outfit), var(--font-inter), sans-serif;
+    @apply tracking-tight;
+  }
 }
 
-.animate-pulse-slow {
-  animation: pulse-subtle 3s infinite ease-in-out;
+/* --- Engawa Cycle Premium Utilities --- */
+
+.glass-morphism {
+  @apply bg-opacity-70 backdrop-blur-xl border border-white/10;
+}
+
+.liquid-transition {
+  transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes floatUp {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes synapsing {
+  0%, 100% { opacity: 0.5; filter: drop-shadow(0 0 2px rgba(255,255,255,0.2)); }
+  50% { opacity: 1; filter: drop-shadow(0 0 8px rgba(255,255,255,0.4)); }
+}
+
+.animate-float-in {
+  animation: floatUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.animate-synapsing {
+  animation: synapsing 2.5s ease-in-out infinite;
+}
+
+/* Hide scrollbars */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Chat bubble aesthetics */
+.chat-bubble-p {
+  @apply leading-relaxed tracking-normal;
+  font-size: 0.9375rem; /* 15px equivalent */
 }

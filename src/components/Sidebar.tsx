@@ -23,23 +23,23 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/10 backdrop-blur-[2px] z-40 transition-opacity animate-in fade-in duration-300"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 liquid-transition animate-in fade-in duration-500"
           onClick={onClose}
         />
       )}
 
       {/* Sidebar Content */}
       <aside className={`
-        fixed top-0 left-0 h-full w-72 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-2xl z-50 
-        border-r border-zinc-200 dark:border-zinc-800 transition-transform duration-300 ease-in-out
+        fixed top-0 left-0 h-full w-80 bg-card/90 backdrop-blur-3xl z-50 
+        border-r border-border/60 liquid-transition
         ${isOpen ? "translate-x-0" : "-translate-x-full"}
       `}>
-        <div className="flex flex-col h-full p-4">
-          <div className="flex items-center justify-between mb-8 px-2">
-            <h2 className="text-xs font-bold uppercase tracking-widest opacity-30">History</h2>
+        <div className="flex flex-col h-full p-6">
+          <div className="flex items-center justify-between mb-10 px-2">
+            <h2 className="text-[11px] font-bold uppercase tracking-[0.3em] opacity-30 font-heading">Personnel Archive</h2>
             <button 
               onClick={onClose}
-              className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+              className="p-2 hover:bg-secondary rounded-xl liquid-transition active:scale-90"
             >
               <ChevronLeft size={16} className="opacity-40" />
             </button>
@@ -50,16 +50,16 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               createSession();
               onClose();
             }}
-            className="flex items-center gap-3 w-full px-4 py-3 mb-6 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-2xl text-sm font-medium hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-black/5"
+            className="flex items-center justify-center gap-3 w-full px-6 py-4 mb-10 bg-primary text-primary-foreground rounded-2xl text-xs font-bold uppercase tracking-widest hover:opacity-90 active:scale-[0.98] liquid-transition shadow-2xl shadow-primary/10"
           >
             <Plus size={16} />
-            <span>New Chat</span>
+            <span>New Strategic Session</span>
           </button>
 
-          <div className="flex-1 overflow-y-auto space-y-1 pr-2 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto space-y-2 pr-2 no-scrollbar">
             {sessions.length === 0 ? (
-              <div className="px-4 py-8 text-center opacity-20 text-xs italic">
-                No history yet
+              <div className="px-4 py-8 text-center opacity-20 text-[10px] font-bold uppercase tracking-widest italic font-heading">
+                Empty Records
               </div>
             ) : (
               sessions.map((session) => (
@@ -73,14 +73,14 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                       onClose();
                     }}
                     className={`
-                      flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm transition-all text-left truncate
+                      flex items-center gap-4 w-full px-5 py-4 rounded-2xl text-sm liquid-transition text-left truncate
                       ${currentSessionId === session.id 
-                        ? "bg-accent/5 text-accent font-medium" 
-                        : "hover:bg-zinc-100 dark:hover:bg-zinc-800 opacity-60 hover:opacity-100"}
+                        ? "bg-accent/10 text-accent font-semibold border border-accent/20" 
+                        : "hover:bg-secondary/80 opacity-60 hover:opacity-100"}
                     `}
                   >
-                    <MessageSquare size={14} className={currentSessionId === session.id ? "opacity-100" : "opacity-40"} />
-                    <span className="truncate flex-1 pr-4">{session.title || "Untitled"}</span>
+                    <MessageSquare size={15} className={currentSessionId === session.id ? "opacity-100" : "opacity-30"} />
+                    <span className="truncate flex-1 pr-6">{session.title || "Untitled Intelligence"}</span>
                   </button>
                   
                   <button 
@@ -88,7 +88,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                       e.stopPropagation();
                       removeSession(session.id);
                     }}
-                    className="absolute right-2 p-2 opacity-0 group-hover:opacity-40 hover:opacity-100 hover:text-red-500 transition-all"
+                    className="absolute right-3 p-2 opacity-0 group-hover:opacity-40 hover:opacity-100 hover:text-red-500 liquid-transition"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -97,9 +97,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             )}
           </div>
 
-          <div className="mt-auto pt-4 border-t border-zinc-200 dark:border-zinc-800 px-2">
-            <div className="text-[10px] opacity-20 uppercase font-bold tracking-tighter">
-              Minimal LLM Workspace v1.0.0
+          <div className="mt-auto pt-6 border-t border-border/40 px-2">
+            <div className="text-[9px] opacity-20 uppercase font-black tracking-[0.4em] font-heading">
+              Engawa Cycle OS v1.0.0
             </div>
           </div>
         </div>
