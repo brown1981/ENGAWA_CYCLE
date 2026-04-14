@@ -13,6 +13,7 @@ export function useChat() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
   
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -25,6 +26,7 @@ export function useChat() {
       abortControllerRef.current = null;
     }
     setIsLoading(false);
+    setStatus(null);
   }, []);
 
   const clearMessages = useCallback(() => {
@@ -42,6 +44,7 @@ export function useChat() {
     if (isLoading) return;
 
     setIsLoading(true);
+    setStatus("Initiating executive protocol...");
     setError(null);
 
     let targetSession = currentSession;
@@ -74,28 +77,17 @@ export function useChat() {
       const authErrorMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: "assistant",
-        content: "⚠️ **認証エラー**: AIの知能（APIキー）が設定されていません。[OS Preferences] からAPIキーを正しく入力してください。設定後、このメッセージに続けて再度指示を出していただけます。",
+        content: "⚠️ **認証エラー**: AIの知能（APIキー）が設定されていません。[OS Preferences] からAPIキーを正しく入力してください。",
         createdAt: new Date().toISOString(),
       };
-      
-      updateSession(targetSession.id, (prev) => ({ 
-        messages: [...prev.messages, authErrorMessage] 
-      }));
-      
+      updateSession(targetSession!.id, (prev) => ({ messages: [...prev.messages, authErrorMessage] }));
       setIsLoading(false);
+      setStatus(null);
       return;
     }
 
     abortControllerRef.current = new AbortController();
     
-    const timeoutId = setTimeout(() => {
-      if (isLoading && abortControllerRef.current) {
-        abortControllerRef.current.abort();
-        setError("エージェントの思考（マルチエージェント連携）に時間がかかりすぎたため、タイムアウトしました。より高速な 'gpt-4o-mini' を試すか、指示をより具体的に絞り込んでください。");
-        setIsLoading(false);
-      }
-    }, 60000);
-
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -115,36 +107,59 @@ export function useChat() {
         signal: abortControllerRef.current.signal
       });
 
-      clearTimeout(timeoutId);
-
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: response.statusText }));
-        let msg = errorData.error || response.statusText;
-        if (response.status === 401) msg = "認証エラー(401): APIキーが正しくないか、期限が切れています。";
-        if (response.status === 504) msg = "サーバータイムアウト(504): 処理に時間がかかりすぎました。軽量モデルを試してください。";
-        throw new Error(`[${response.status}] ${msg}`);
+        throw new Error(`[${response.status}] ${errorData.error || response.statusText}`);
       }
 
-      const data = await response.json();
-      const assistantMessage: ChatMessage = {
-        id: data.id || crypto.randomUUID(),
-        role: "assistant",
-        content: data.content || "",
-        createdAt: new Date().toISOString(),
-      };
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("Response body is not readable");
 
-      updateSession(targetSession!.id, (prev) => ({ 
-        messages: [...prev.messages, assistantMessage] 
-      }));
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const chunk = JSON.parse(line);
+            if (chunk.type === "status") {
+              setStatus(chunk.content);
+            } else if (chunk.type === "final") {
+              const assistantMessage: ChatMessage = {
+                id: chunk.id || crypto.randomUUID(),
+                role: "assistant",
+                content: chunk.content || "",
+                createdAt: chunk.createdAt || new Date().toISOString(),
+              };
+              updateSession(targetSession!.id, (prev) => ({ 
+                messages: [...prev.messages, assistantMessage] 
+              }));
+            } else if (chunk.type === "error") {
+              throw new Error(chunk.content);
+            }
+          } catch (e) {
+            console.warn("Failed to parse stream chunk:", e);
+          }
+        }
+      }
 
       setIsLoading(false);
+      setStatus(null);
       abortControllerRef.current = null;
 
     } catch (err: any) {
-      clearTimeout(timeoutId);
       if (err.name === 'AbortError') return;
       setError(err.message || "Unknown error occurred");
       setIsLoading(false);
+      setStatus(null);
       abortControllerRef.current = null;
       console.error("Chat Error:", err);
     }
@@ -152,7 +167,7 @@ export function useChat() {
 
   return {
     messages, sendMessage, stopGeneration, apiKey, setApiKey: contextSetApiKey,
-    model, setModel: contextSetModel, clearMessages, isLoading, error,
+    model, setModel: contextSetModel, clearMessages, isLoading, error, status,
     createSession: contextCreateSession
   };
 }

@@ -26,7 +26,7 @@ export class AgentExecutor {
   /**
    * 別のエージェントに仕事を依頼する
    */
-  async delegate(role: string, instruction: string, model: string = "gpt-4o-mini") {
+  async delegate(role: string, instruction: string, model: string = "gpt-4o-mini", onStatus?: (status: string) => void) {
     if (this.recursionDepth >= 3) {
       throw new Error("Maximum delegation depth (3) reached. Preventing infinite loops.");
     }
@@ -53,7 +53,7 @@ export class AgentExecutor {
       { role: "user", content: instruction }
     ];
 
-    return subExecutor.runV2(subMessages, model);
+    return subExecutor.runV2(subMessages, model, onStatus);
   }
 
   /**
@@ -84,9 +84,11 @@ export class AgentExecutor {
    * 社長（ユーザー）からの指示を受け取り、
    * 必要ならツールを使いながら最終的な解決策を導き出す。
    */
-  async runV2(messages: any[], model: string) {
+  async runV2(messages: any[], model: string, onStatus?: (status: string) => void) {
     let loopCount = 0;
     const history = [...messages];
+
+    if (onStatus) onStatus("Analyzing directive and planning tactical strategy...");
 
     while (loopCount < this.maxLoops) {
       console.log(`[Executor:${this.requestId}] Loop ${loopCount + 1}...`);
@@ -104,6 +106,7 @@ export class AgentExecutor {
       // 1. ツール呼び出しがない＝思考完了
       if (!assistantMessage.tool_calls || assistantMessage.tool_calls.length === 0) {
         console.log(`[Executor:${this.requestId}] Goal reached.`);
+        if (onStatus) onStatus("Synthesizing final executive report...");
         return {
           id: completion.id,
           content: assistantMessage.content,
@@ -115,14 +118,30 @@ export class AgentExecutor {
       console.log(`[Executor:${this.requestId}] Executing ${assistantMessage.tool_calls.length} tools...`);
       
       for (const toolCall of assistantMessage.tool_calls) {
-        const tool = tools[toolCall.function.name];
+        const toolName = toolCall.function.name;
+        const tool = tools[toolName];
         if (tool) {
           try {
             const args = JSON.parse(toolCall.function.arguments);
+            
+            // ステータス通知の生成
+            if (onStatus) {
+              if (toolName === "delegate_task") {
+                onStatus(`Delegating complex task to ${args.role} specialist...`);
+              } else if (toolName === "web_search") {
+                onStatus("Searching the web for latest intelligence...");
+              } else if (toolName === "get_crypto_price") {
+                onStatus(`Retrieving real-time market data for ${args.symbol}...`);
+              } else {
+                onStatus(`Executing tool: ${toolName}...`);
+              }
+            }
+
             const result = await tool.execute(args, {
               requestId: this.requestId,
               agentId: this.agentId,
-              delegate: this.delegate.bind(this),
+              delegate: (role: string, instruction: string, subModel: string) => 
+                this.delegate(role, instruction, subModel, onStatus), // 委譲先にもコールバックを渡す
               ...this.extraKeys
             });
             

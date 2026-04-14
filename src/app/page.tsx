@@ -10,7 +10,7 @@ import { SettingsModal } from "@/components/SettingsModal";
 export default function Home() {
   const { 
     messages, sendMessage, stopGeneration, apiKey, 
-    model, setModel, isLoading, error, createSession
+    model, setModel, isLoading, error, status, createSession
   } = useChat();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -104,8 +104,11 @@ export default function Home() {
           
           {isLoading && (
             <div className="flex items-start animate-soft-in">
-              <div className="bg-card px-6 py-3.5 rounded-2xl border border-border/30 pulse-intelligence backdrop-blur-3xl">
-                <span className="text-[9px] font-bold tracking-[0.4em] uppercase opacity-25 font-heading">Executing Neural Sequence</span>
+              <div className="bg-card px-6 py-4 rounded-[2rem] border border-border/30 shadow-[0_16px_48px_-12px_rgba(0,0,0,0.1)] backdrop-blur-3xl flex items-center gap-4">
+                <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                <span className="text-[10px] font-bold tracking-[0.2em] uppercase opacity-40 font-heading animate-pulse">
+                  {status || "Executing Neural Sequence..."}
+                </span>
               </div>
             </div>
           )}
