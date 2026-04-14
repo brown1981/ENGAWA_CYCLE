@@ -166,29 +166,28 @@ export function SettingsModal({
                     <RefreshCw size={14} />
                   </button>
                 </div>
-              </div>
             </div>
           </section>
 
           {/* Theme Section */}
-          <section className="space-y-4">
-            <label className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-30 flex items-center gap-2 font-heading">
+          <section className="space-y-6">
+            <label className="text-[10px] font-bold uppercase tracking-[0.4em] opacity-30 flex items-center gap-2 font-heading">
               <Palette size={12} /> Environmental Aesthetic
             </label>
-            <div className="flex gap-4 p-5 bg-secondary/30 rounded-[2.5rem] border border-border/40">
+            <div className="flex gap-4 p-4 bg-secondary/30 rounded-[calc(var(--radius)-0.5rem)] border border-border/40">
               {(["pure-black", "glass", "paper"] as AppTheme[]).map((t) => (
                 <button
                   key={t}
                   type="button"
                   onClick={() => updateSettings({ theme: t })}
                   className={`
-                    flex-1 py-5 rounded-[1.8rem] border liquid-transition flex flex-col items-center gap-3
+                    flex-1 py-4 rounded-xl border liquid-transition flex flex-col items-center gap-2
                     ${settings.theme === t 
-                      ? "bg-primary text-primary-foreground border-primary shadow-xl opacity-100" 
-                      : "bg-card border-border/20 opacity-40 hover:opacity-100"}
+                      ? "bg-primary text-primary-foreground border-primary shadow-lg scale-[1.02] z-10" 
+                      : "bg-card border-border/20 opacity-40 hover:opacity-100 hover:scale-[1.01]"}
                   `}
                 >
-                  <div className={`w-5 h-5 rounded-full shadow-inner ${t === 'pure-black' ? 'bg-black' : t === 'glass' ? 'bg-sky-400' : 'bg-[#fdfaf6] border border-border/60'}`} />
+                  <div className={`w-4 h-4 rounded-full shadow-inner ${t === 'pure-black' ? 'bg-black' : t === 'glass' ? 'bg-sky-500' : 'bg-[#fdfaf6] border border-border/60'}`} />
                   <span className="text-[9px] font-black uppercase tracking-[0.2em]">{t}</span>
                 </button>
               ))}
@@ -196,10 +195,14 @@ export function SettingsModal({
           </section>
         </div>
 
-        <div className="mt-10">
-          <button
+        <footer className="mt-12 pt-8 border-t border-border/40 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-[9px] font-bold uppercase tracking-[0.3em] opacity-30">OS Secure Core v1.0.2</span>
+          </div>
+          <button 
             onClick={onClose}
-            className="w-full bg-primary text-primary-foreground py-5 rounded-[2.2rem] font-bold text-xs uppercase tracking-widest hover:opacity-90 active:scale-[0.98] liquid-transition shadow-[0_20px_40px_-12px_rgba(255,255,255,0.1)]"
+            className="px-10 py-4 bg-primary text-primary-foreground rounded-xl text-[10px] font-extrabold uppercase tracking-[0.3em] hover:opacity-90 active:scale-95 shadow-lg liquid-transition"
           >
             Authorize Changes
           </button>

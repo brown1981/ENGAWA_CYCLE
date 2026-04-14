@@ -35,11 +35,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         ${isOpen ? "translate-x-0" : "-translate-x-full"}
       `}>
         <div className="flex flex-col h-full p-6">
-          <div className="flex items-center justify-between mb-10 px-2">
-            <h2 className="text-[11px] font-bold uppercase tracking-[0.3em] opacity-30 font-heading">Personnel Archive</h2>
+          <div className="flex items-center justify-between mb-8 px-2">
+            <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] opacity-30 font-heading">Personnel Archive</h2>
             <button 
               onClick={onClose}
-              className="p-2 hover:bg-secondary rounded-xl liquid-transition active:scale-90"
+              className="p-2 hover:bg-secondary rounded-lg liquid-transition active:scale-90"
             >
               <ChevronLeft size={16} className="opacity-40" />
             </button>
@@ -50,15 +50,15 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               createSession();
               onClose();
             }}
-            className="flex items-center justify-center gap-3 w-full px-6 py-4 mb-10 bg-primary text-primary-foreground rounded-2xl text-xs font-bold uppercase tracking-widest hover:opacity-90 active:scale-[0.98] liquid-transition shadow-2xl shadow-primary/10"
+            className="flex items-center justify-center gap-3 w-full px-6 py-4 mb-8 bg-primary text-primary-foreground rounded-[var(--radius)] text-[10px] font-bold uppercase tracking-[0.2em] hover:opacity-90 active:scale-[0.98] liquid-transition shadow-xl shadow-primary/5"
           >
-            <Plus size={16} />
+            <Plus size={14} />
             <span>New Strategic Session</span>
           </button>
 
-          <div className="flex-1 overflow-y-auto space-y-2 pr-2 no-scrollbar">
+          <div className="flex-1 overflow-y-auto space-y-2.5 pr-2 no-scrollbar">
             {sessions.length === 0 ? (
-              <div className="px-4 py-8 text-center opacity-20 text-[10px] font-bold uppercase tracking-widest italic font-heading">
+              <div className="px-4 py-12 text-center opacity-15 text-[9px] font-bold uppercase tracking-[0.3em] font-heading">
                 Empty Records
               </div>
             ) : (
@@ -73,14 +73,14 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                       onClose();
                     }}
                     className={`
-                      flex items-center gap-4 w-full px-5 py-4 rounded-2xl text-sm liquid-transition text-left truncate
+                      flex items-center gap-4 w-full px-5 py-3.5 rounded-[calc(var(--radius)-0.5rem)] text-sm liquid-transition text-left truncate
                       ${currentSessionId === session.id 
                         ? "bg-accent/10 text-accent font-semibold border border-accent/20" 
-                        : "hover:bg-secondary/80 opacity-60 hover:opacity-100"}
+                        : "hover:bg-secondary/50 opacity-50 hover:opacity-100"}
                     `}
                   >
-                    <MessageSquare size={15} className={currentSessionId === session.id ? "opacity-100" : "opacity-30"} />
-                    <span className="truncate flex-1 pr-6">{session.title || "Untitled Intelligence"}</span>
+                    <MessageSquare size={14} className={currentSessionId === session.id ? "opacity-100" : "opacity-20"} />
+                    <span className="truncate flex-1 pr-6 leading-tight">{session.title || "Untitled Intelligence"}</span>
                   </button>
                   
                   <button 

@@ -27,45 +27,45 @@
   }
 
   .dark, [data-theme="pure-black"], .theme-root.pure-black {
-    --background: 0 0% 0%;
+    --background: 0 0% 0% !important; /* Ensure absolute black */
     --foreground: 0 0% 98%;
-    --card: 0 0% 4%;
+    --card: 0 0% 3%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 4%;
+    --popover: 0 0% 3%;
     --popover-foreground: 0 0% 98%;
     --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 12%;
+    --primary-foreground: 0 0% 5%;
+    --secondary: 0 0% 8%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 0 0% 8%;
+    --muted-foreground: 0 0% 60%;
     --accent: 212 100% 50%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 0 0% 89%;
+    --border: 0 0% 12%;
+    --input: 0 0% 12%;
+    --ring: 0 0% 80%;
   }
 
   .theme-root.paper {
-    --background: 36 33% 97%;
-    --foreground: 20 10% 10%;
+    --background: 36 33% 96%;
+    --foreground: 20 10% 8%;
     --card: 0 0% 100%;
-    --card-foreground: 20 10% 10%;
+    --card-foreground: 20 10% 8%;
     --popover: 0 0% 100%;
-    --popover-foreground: 20 10% 10%;
-    --primary: 20 10% 10%;
+    --popover-foreground: 20 10% 8%;
+    --primary: 20 10% 8%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 36 33% 92%;
-    --secondary-foreground: 20 10% 10%;
-    --muted: 36 33% 90%;
+    --secondary: 36 30% 90%;
+    --secondary-foreground: 20 10% 8%;
+    --muted: 36 20% 85%;
     --muted-foreground: 20 10% 40%;
     --accent: 212 100% 45%;
     --accent-foreground: 0 0% 100%;
-    --border: 36 20% 85%;
-    --input: 36 20% 85%;
-    --ring: 20 10% 10%;
+    --border: 36 20% 80%;
+    --input: 36 20% 80%;
+    --ring: 20 10% 8%;
   }
 
   .theme-root.glass {
@@ -83,9 +83,15 @@
     --muted-foreground: 240 3.8% 46.1%;
     --accent: 250 100% 60%;
     --accent-foreground: 0 0% 100%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
+    --border: 240 5.9% 88%;
+    --input: 240 5.9% 88%;
     --ring: 240 5.9% 10%;
+  }
+}
+
+@layer base {
+  :root {
+    --radius: 1.75rem; /* Unified for premium balance */
   }
 }
 
