@@ -11,81 +11,62 @@ function parseDataUrl(dataUrl: string) {
 }
 
 export async function POST(req: Request) {
+  const requestId = Math.random().toString(36).slice(7);
+  console.log(`[API:${requestId}] --- New Request ---`);
+  
   try {
-    const openaiKey = req.headers.get("Authorization")?.replace("Bearer ", "");
-    const anthropicKey = req.headers.get("X-Anthropic-Key");
-    const geminiKey = req.headers.get("X-Gemini-Key");
+    const openaiKey = req.headers.get("Authorization")?.replace("Bearer ", "")?.trim();
+    const anthropicKey = req.headers.get("X-Anthropic-Key")?.trim();
+    const geminiKey = req.headers.get("X-Gemini-Key")?.trim();
     
-    const { messages, model, image, customInstructions } = await req.json();
+    const body = await req.json();
+    const { messages, model, image, customInstructions } = body;
+    
+    console.log(`[API:${requestId}] Model: ${model}, Messages: ${messages?.length}`);
+    
     const imageData = image ? parseDataUrl(image) : null;
+    if (image && !imageData) console.warn(`[API:${requestId}] Image attached but failed to parse DataURL`);
 
     // Provider Routing: Google Gemini
     if (model.startsWith("gemini")) {
-      if (!geminiKey) {
-        return NextResponse.json({ error: "Google API Key is required for Gemini models" }, { status: 401 });
-      }
+      console.log(`[API:${requestId}] Routing to Gemini...`);
+      if (!geminiKey) return NextResponse.json({ error: "Google API Key is required" }, { status: 401 });
 
       const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
         method: "POST",
-        headers: {
-          "x-goog-api-key": geminiKey,
-          "Content-Type": "application/json",
-        },
+        headers: { "x-goog-api-key": geminiKey, "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...(customInstructions ? {
-            systemInstruction: {
-              parts: [{ text: customInstructions }]
-            }
-          } : {}),
+          ...(customInstructions ? { systemInstruction: { parts: [{ text: customInstructions }] } } : {}),
           contents: messages.map((m: any, idx: number) => {
             const isLastMessage = idx === messages.length - 1;
             const parts = [];
-            
             if (isLastMessage && imageData) {
-              parts.push({
-                inline_data: {
-                  mime_type: imageData.mimeType,
-                  data: imageData.base64Data,
-                }
-              });
+              parts.push({ inline_data: { mime_type: imageData.mimeType, data: imageData.base64Data } });
             }
-
             const textContent = m.content.replace(/data:image\/[^;]+;base64,[^ \n]+/, "").trim();
             parts.push({ text: textContent });
-
-            return {
-              role: m.role === "assistant" ? "model" : "user",
-              parts
-            };
+            return { role: m.role === "assistant" ? "model" : "user", parts };
           }),
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 4096,
-          }
+          generationConfig: { temperature: 0.7, maxOutputTokens: 4096 }
         }),
       });
 
       const data = await geminiResponse.json();
-      if (!geminiResponse.ok) {
-        throw new Error(data.error?.message || "Google Gemini API Error");
-      }
+      console.log(`[API:${requestId}] Gemini Status: ${geminiResponse.status}`);
+      if (!geminiResponse.ok) throw new Error(data.error?.message || `Gemini Error ${geminiResponse.status}`);
 
       const assistantText = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!assistantText) throw new Error("No response generated from Gemini");
 
       return NextResponse.json({
-        id: `gemini-${Date.now()}`,
-        role: "assistant",
-        content: assistantText,
-        createdAt: new Date().toISOString(),
+        id: `gemini-${Date.now()}`, role: "assistant", content: assistantText, createdAt: new Date().toISOString()
       });
     }
 
     // Provider Routing: Anthropic Claude
     if (model.startsWith("claude")) {
-      if (!anthropicKey) {
-        return NextResponse.json({ error: "Anthropic API Key is required for Claude models" }, { status: 401 });
-      }
+      console.log(`[API:${requestId}] Routing to Anthropic...`);
+      if (!anthropicKey) return NextResponse.json({ error: "Anthropic API Key is required" }, { status: 401 });
 
       const anthropicResponse = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
@@ -101,19 +82,11 @@ export async function POST(req: Request) {
           messages: messages.map((m: any, idx: number) => {
             const isLastMessage = idx === messages.length - 1;
             const textContent = m.content.replace(/data:image\/[^;]+;base64,[^ \n]+/, "").trim();
-
             if (isLastMessage && imageData) {
               return {
                 role: m.role,
                 content: [
-                  {
-                    type: "image",
-                    source: {
-                      type: "base64",
-                      media_type: imageData.mimeType,
-                      data: imageData.base64Data,
-                    },
-                  },
+                  { type: "image", source: { type: "base64", media_type: imageData.mimeType, data: imageData.base64Data } },
                   { type: "text", text: textContent },
                 ],
               };
@@ -124,22 +97,17 @@ export async function POST(req: Request) {
       });
 
       const data = await anthropicResponse.json();
-      if (!anthropicResponse.ok) {
-        throw new Error(data.error?.message || "Anthropic API Error");
-      }
+      console.log(`[API:${requestId}] Anthropic Status: ${anthropicResponse.status}`);
+      if (!anthropicResponse.ok) throw new Error(data.error?.message || `Anthropic Error ${anthropicResponse.status}`);
 
       return NextResponse.json({
-        id: data.id,
-        role: "assistant",
-        content: data.content[0].text,
-        createdAt: new Date().toISOString(),
+        id: data.id, role: "assistant", content: data.content[0].text, createdAt: new Date().toISOString()
       });
     } 
     
     // Provider Routing: OpenAI (Default)
-    if (!openaiKey) {
-      return NextResponse.json({ error: "OpenAI API Key is required" }, { status: 401 });
-    }
+    console.log(`[API:${requestId}] Routing to OpenAI...`);
+    if (!openaiKey) return NextResponse.json({ error: "OpenAI API Key is required" }, { status: 401 });
 
     const openai = new OpenAI({ apiKey: openaiKey });
     const isSearchModel = model?.includes("search");
@@ -147,47 +115,38 @@ export async function POST(req: Request) {
     const formattedMessages = messages.map((m: any, idx: number) => {
       const isLastMessage = idx === messages.length - 1;
       const textContent = m.content.replace(/data:image\/[^;]+;base64,[^ \n]+/, "").trim();
-
       if (isLastMessage && imageData) {
         return {
           role: m.role,
           content: [
             { type: "text", text: textContent },
-            { 
-              type: "image_url", 
-              image_url: { url: image, detail: "low" } 
-            },
+            { image_url: { url: image, detail: "low" }, type: "image_url" },
           ],
         };
       }
       return { role: m.role, content: textContent };
     });
 
-    // Phase 6: Inject System Instructions for OpenAI
     if (customInstructions) {
-      formattedMessages.unshift({
-        role: "system",
-        content: customInstructions
-      });
+      formattedMessages.unshift({ role: "system", content: customInstructions });
     }
 
-    const response = await openai.chat.completions.create({
-      model: model || "gpt-4o-mini-search-preview",
+    console.log(`[API:${requestId}] OpenAI Request Start...`);
+    const completion = await openai.chat.completions.create({
+      model: model || "gpt-4o-mini",
       messages: formattedMessages,
       ...(isSearchModel ? { web_search_options: {} } : {}),
     } as any);
+    console.log(`[API:${requestId}] OpenAI Response Received: ${completion.id}`);
 
-    const assistantMessage = response.choices[0].message;
+    const assistantMessage = completion.choices[0].message;
 
     return NextResponse.json({
-      id: response.id,
-      role: "assistant",
-      content: assistantMessage.content,
-      createdAt: new Date().toISOString(),
+      id: completion.id, role: "assistant", content: assistantMessage.content, createdAt: new Date().toISOString()
     });
     
   } catch (error: any) {
-    console.error("Universal API Error:", error);
+    console.error(`[API:${requestId}] Universal API Error:`, error);
     return NextResponse.json(
       { error: error.message || "Failed to fetch from AI Provider" },
       { status: 500 }

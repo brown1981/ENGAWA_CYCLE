@@ -26,8 +26,15 @@ export default function Home() {
   }, [messages, streamingContent]);
 
   const handleSend = () => {
-    if (isLoading) { stopGeneration(); return; }
+    // Phase 33: Multi-layer protection against race conditions
+    if (isLoading) {
+      console.log("[Home] Send blocked: Already loading. Stopping generation instead.");
+      stopGeneration(); 
+      return; 
+    }
     if ((!input.trim() && !attachedImage)) return;
+    
+    console.log("[Home] Triggering sendMessage...");
     sendMessage(input, attachedImage);
     setInput("");
     setAttachedImage(null);
@@ -62,18 +69,12 @@ export default function Home() {
         </header>
 
         <div ref={scrollRef} className="flex-1 overflow-y-auto px-8 pb-36 pt-4 space-y-12 max-w-3xl mx-auto w-full scroll-smooth custom-scrollbar">
-          {/* Diagnostic Error View (Phase 31) */}
           {error && messages.length === 0 && (
             <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-4 animate-in fade-in zoom-in-95 duration-500">
               <div className="p-4 bg-red-500/10 rounded-full text-red-500"><AlertCircle size={48} /></div>
               <h2 className="text-lg font-bold">通信エラーが発生しました</h2>
               <p className="text-sm opacity-60 max-w-xs">{error}</p>
-              <button 
-                onClick={() => setIsSettingsOpen(true)}
-                className="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-full text-xs font-bold uppercase tracking-wider hover:scale-105 transition-all"
-              >
-                Settings を確認する
-              </button>
+              <button onClick={() => setIsSettingsOpen(true)} className="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-full text-xs font-bold uppercase tracking-wider hover:scale-105 transition-all">Settings を確認する</button>
             </div>
           )}
 
@@ -125,13 +126,14 @@ export default function Home() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                 placeholder={attachedImage ? "画像についての質問を入力..." : "思考を入力..."}
-                className="w-full bg-white dark:bg-zinc-900/80 backdrop-blur-3xl border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] px-8 py-6 pr-32 shadow-2xl focus:outline-none focus:ring-1 focus:ring-accent transition-all resize-none min-h-[72px] max-h-48 custom-scrollbar"
+                className="w-full bg-white dark:bg-zinc-900/80 backdrop-blur-3xl border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] px-8 py-6 pr-32 shadow-2xl focus:outline-none focus:ring-1 focus:ring-accent transition-all resize-none min-h-[72px] max-h-48 custom-scrollbar disabled:opacity-50"
                 rows={1}
+                disabled={isLoading}
               />
               <div className="absolute right-5 bottom-5 flex gap-3">
-                <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".txt,.md,image/*" />
-                <button onClick={() => fileInputRef.current?.click()} className={`p-3 transition-all rounded-full ${attachedImage ? 'text-accent opacity-100' : 'opacity-20 hover:opacity-100'}`}><Paperclip size={20} /></button>
-                <button onClick={handleSend} className={`p-3 transition-all hover:scale-105 active:scale-95 shadow-xl ${isLoading ? 'bg-red-500' : 'bg-accent'} text-white rounded-[1.2rem] disabled:opacity-20`}>
+                <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".txt,.md,image/*" disabled={isLoading} />
+                <button onClick={() => fileInputRef.current?.click()} className={`p-3 transition-all rounded-full ${attachedImage ? 'text-accent opacity-100' : 'opacity-20 hover:opacity-100'}`} disabled={isLoading}><Paperclip size={20} /></button>
+                <button onClick={handleSend} className={`p-3 transition-all hover:scale-105 active:scale-95 shadow-xl ${isLoading ? 'bg-red-500' : 'bg-accent'} text-white rounded-[1.2rem] disabled:opacity-50`}>
                   {isLoading ? <Square size={20} fill="currentColor" /> : <Send size={20} />}
                 </button>
               </div>

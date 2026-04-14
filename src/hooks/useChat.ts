@@ -47,12 +47,22 @@ export function useChat() {
 
   const sendMessage = useCallback(async (content: string, image?: string | null) => {
     if (!content.trim() && !image) return;
+    if (isLoading) return; // Immediate lock
+
     if (!apiKey) {
       setError("API Key が設定されていません。設定から入力してください。");
+      console.warn("[useChat] Attempted to send message without API Key");
       return;
     }
 
-    // Phase 32: Correct Atomic Preparation
+    // Step 0: Initializing state immediately
+    setIsLoading(true);
+    setError(null);
+    setStreamingContent("");
+
+    console.log(`[useChat] Starting sendMessage for model: ${model}`);
+
+    // Phase 32/33: Atomic Preparation
     let targetSession = currentSession;
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
@@ -64,6 +74,7 @@ export function useChat() {
     let payloadMessages: ChatMessage[] = [];
 
     if (!targetSession) {
+      console.log("[useChat] Creating new session...");
       targetSession = {
         id: crypto.randomUUID(),
         title: content.slice(0, 20) || "Image Analysis",
@@ -73,22 +84,17 @@ export function useChat() {
         updatedAt: new Date().toISOString(),
       };
       upsertSession(targetSession);
-      payloadMessages = [userMessage]; // Just the new message for a new session
+      payloadMessages = [userMessage];
     } else {
+      console.log("[useChat] Adding message to existing session:", targetSession.id);
       payloadMessages = [...targetSession.messages, userMessage];
       updateSession(targetSession.id, { messages: payloadMessages });
     }
 
-    setIsLoading(true);
-    setError(null);
-    setStreamingContent("");
-    
-    // Debug logging for troubleshooting (Phase 32)
-    console.log(`[useChat] Sending ${payloadMessages.length} messages to model: ${model}`);
-    
     abortControllerRef.current = new AbortController();
 
     try {
+      console.log(`[useChat] Fetching /api/chat... payload size: ${payloadMessages.length}`);
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
@@ -98,7 +104,7 @@ export function useChat() {
           ...(settings.geminiKey ? { "X-Gemini-Key": settings.geminiKey } : {}),
         },
         body: JSON.stringify({
-          messages: payloadMessages, // Corrected: No more duplication
+          messages: payloadMessages,
           model: model,
           image: image,
           customInstructions: settings.customInstructions
@@ -106,12 +112,17 @@ export function useChat() {
         signal: abortControllerRef.current.signal
       });
 
+      console.log(`[useChat] Response status: ${response.status} ${response.statusText}`);
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: response.statusText }));
-        throw new Error(`[${response.status}] ${errorData.error || "Failed to fetch from AI"}`);
+        const errorMessage = errorData.error || response.statusText;
+        throw new Error(`[${response.status}] ${errorMessage}`);
       }
 
       const data = await response.json();
+      console.log("[useChat] Success! Assistant content received.");
+
       const assistantMessage: ChatMessage = {
         id: data.id || crypto.randomUUID(),
         role: "assistant",
@@ -124,6 +135,7 @@ export function useChat() {
       if (typingIntervalRef.current) { clearInterval(typingIntervalRef.current); typingIntervalRef.current = null; }
       
       if (!fullContent) {
+        console.warn("[useChat] Received empty content from assistant.");
         updateSession(targetSession!.id, (prev) => ({ messages: [...prev.messages, assistantMessage] }));
         setIsLoading(false);
         return;
@@ -139,18 +151,22 @@ export function useChat() {
           setStreamingContent("");
           setIsLoading(false);
           abortControllerRef.current = null;
+          console.log("[useChat] Typing effect finished.");
         }
       }, settings.typingSpeed || 20);
 
     } catch (err: any) {
-      if (err.name === 'AbortError') return;
+      if (err.name === 'AbortError') {
+        console.log("[useChat] Aborted by user.");
+        return;
+      }
+      console.error("[useChat] Error in sendMessage:", err);
       setError(err.message || "Unknown error occurred");
       setIsLoading(false);
       abortControllerRef.current = null;
       setStreamingContent("");
-      console.error("Chat Error:", err);
     }
-  }, [apiKey, currentSession, upsertSession, updateSession, model, settings]);
+  }, [apiKey, currentSession, upsertSession, updateSession, model, settings, isLoading]);
 
   return {
     messages, sendMessage, stopGeneration, apiKey, setApiKey: contextSetApiKey,
