@@ -173,7 +173,7 @@ export function SettingsModal({
                   value={settings.searchKey || ""}
                   onChange={(e) => updateSettings({ searchKey: e.target.value })}
                   placeholder="Tavily / Serper Key"
-                  className="w-full bg-background/50 border border-border/20 rounded-xl px-5 py-3 text-xs focus:outline-none focus:ring-1 focus:ring-accent/30 font-mono"
+                  className="w-full bg-background/40 border border-border/30 rounded-xl px-5 py-3 text-xs focus:outline-none focus:ring-1 focus:ring-accent/40 font-mono liquid-transition"
                 />
               </div>
 
@@ -184,8 +184,8 @@ export function SettingsModal({
                     type="text"
                     value={settings.syncKey || ""}
                     onChange={(e) => updateSettings({ syncKey: e.target.value })}
-                    placeholder="UUID"
-                    className="w-full bg-background/50 border border-border/20 rounded-xl px-5 py-3 text-xs focus:outline-none font-mono pr-20"
+                    placeholder="Shared Office Key (UUID)"
+                    className="w-full bg-background/40 border border-border/30 rounded-xl px-5 py-3 text-xs focus:outline-none focus:ring-1 focus:ring-accent/40 font-mono pr-20 liquid-transition"
                   />
                   <div className="absolute right-2 top-1.5 flex gap-1">
                     <button onClick={handleCopy} className="p-1.5 opacity-20 hover:opacity-100 hover:bg-secondary rounded-lg liquid-transition">
