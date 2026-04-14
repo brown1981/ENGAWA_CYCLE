@@ -6,15 +6,9 @@ import { useChatContext } from "@/contexts/ChatContext";
 
 export function useChat() {
   const { 
-    sessions, 
-    currentSessionId, 
-    updateSession, 
-    createSession: contextCreateSession,
-    apiKey,
-    setApiKey: contextSetApiKey,
-    model,
-    setModel: contextSetModel,
-    settings
+    sessions, currentSessionId, updateSession, upsertSession,
+    createSession: contextCreateSession, apiKey, setApiKey: contextSetApiKey,
+    model, setModel: contextSetModel, settings
   } = useChatContext();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -41,12 +35,9 @@ export function useChat() {
   }, []);
 
   const clearMessages = useCallback(() => {
-    if (currentSessionId) {
-      updateSession(currentSessionId, { messages: [] });
-    }
+    if (currentSessionId) updateSession(currentSessionId, { messages: [] });
   }, [currentSessionId, updateSession]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
@@ -61,11 +52,8 @@ export function useChat() {
       return;
     }
 
+    // Atomic Session Preparation (Phase 31)
     let targetSession = currentSession;
-    if (!targetSession) {
-      targetSession = contextCreateSession(content.slice(0, 20) || "Image Analysis");
-    }
-
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
       role: "user",
@@ -73,18 +61,26 @@ export function useChat() {
       createdAt: new Date().toISOString(),
     };
 
-    updateSession(targetSession.id, (prev) => {
-      const updatedMessages = [...prev.messages, userMessage];
-      return { 
-        messages: updatedMessages,
-        title: prev.messages.length === 0 ? (content.slice(0, 20) || "Image Analysis") : prev.title
+    if (!targetSession) {
+      targetSession = {
+        id: crypto.randomUUID(),
+        title: content.slice(0, 20) || "Image Analysis",
+        provider: model.includes("claude") ? "anthropic" : model.includes("gemini") ? "google" : "openai",
+        model,
+        messages: [userMessage],
+        updatedAt: new Date().toISOString(),
       };
-    });
+      upsertSession(targetSession); // Create and Add first message atomically
+    } else {
+      // Normal update for existing session
+      updateSession(targetSession.id, (prev) => ({
+        messages: [...prev.messages, userMessage]
+      }));
+    }
 
     setIsLoading(true);
     setError(null);
     setStreamingContent("");
-
     abortControllerRef.current = new AbortController();
 
     try {
@@ -106,12 +102,11 @@ export function useChat() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to fetch from AI");
+        const errorData = await response.json().catch(() => ({ error: response.statusText }));
+        throw new Error(`[${response.status}] ${errorData.error || "Failed to fetch from AI"}`);
       }
 
       const data = await response.json();
-      
       const assistantMessage: ChatMessage = {
         id: data.id || crypto.randomUUID(),
         role: "assistant",
@@ -119,40 +114,24 @@ export function useChat() {
         createdAt: new Date().toISOString(),
       };
 
-      // シミュレーション：タイピングエフェクト
       let i = 0;
       const fullContent = data.content || "";
+      if (typingIntervalRef.current) { clearInterval(typingIntervalRef.current); typingIntervalRef.current = null; }
       
-      if (typingIntervalRef.current) {
-        clearInterval(typingIntervalRef.current);
-        typingIntervalRef.current = null;
-      }
-      
-      // Handle empty response gracefully
       if (!fullContent) {
-        updateSession(targetSession!.id, (prev) => ({
-          messages: [...prev.messages, assistantMessage]
-        }));
+        updateSession(targetSession.id, (prev) => ({ messages: [...prev.messages, assistantMessage] }));
         setIsLoading(false);
         abortControllerRef.current = null;
         return;
       }
 
       typingIntervalRef.current = setInterval(() => {
-        // Correct boundary check: update state only while we have characters to add
         if (i < fullContent.length) {
           setStreamingContent(prev => prev + fullContent[i]);
           i++;
         } else {
-          // Finish loop
-          if (typingIntervalRef.current) {
-            clearInterval(typingIntervalRef.current);
-            typingIntervalRef.current = null;
-          }
-          
-          updateSession(targetSession!.id, (prev) => ({
-            messages: [...prev.messages, assistantMessage]
-          }));
+          if (typingIntervalRef.current) { clearInterval(typingIntervalRef.current); typingIntervalRef.current = null; }
+          updateSession(targetSession!.id, (prev) => ({ messages: [...prev.messages, assistantMessage] }));
           setStreamingContent("");
           setIsLoading(false);
           abortControllerRef.current = null;
@@ -161,26 +140,18 @@ export function useChat() {
 
     } catch (err: any) {
       if (err.name === 'AbortError') return;
-      
       setError(err.message || "Unknown error occurred");
       setIsLoading(false);
       abortControllerRef.current = null;
       setStreamingContent("");
+      // Force log error for user visibility
+      console.error("Chat Error:", err);
     }
-  }, [apiKey, currentSession, contextCreateSession, model, updateSession, settings]);
+  }, [apiKey, currentSession, upsertSession, updateSession, model, settings]);
 
   return {
-    messages,
-    sendMessage,
-    stopGeneration,
-    apiKey,
-    setApiKey: contextSetApiKey, // Re-connected!
-    model,
-    setModel: contextSetModel, // Re-connected!
-    clearMessages,
-    isLoading,
-    error,
-    createSession: contextCreateSession,
-    streamingContent
+    messages, sendMessage, stopGeneration, apiKey, setApiKey: contextSetApiKey,
+    model, setModel: contextSetModel, clearMessages, isLoading, error,
+    createSession: contextCreateSession, streamingContent
   };
 }
