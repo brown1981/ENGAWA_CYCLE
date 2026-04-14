@@ -20,7 +20,8 @@ export async function POST(req: Request) {
     const geminiKey = req.headers.get("X-Gemini-Key")?.trim();
     
     const body = await req.json();
-    const { messages, model, image, customInstructions } = body;
+    const { messages, model: rawModel, image, customInstructions } = body;
+    const model = (rawModel || "").trim();
     
     console.log(`[API:${requestId}] Model: ${model}, Messages: ${messages?.length}`);
     
@@ -32,7 +33,10 @@ export async function POST(req: Request) {
       console.log(`[API:${requestId}] Routing to Gemini...`);
       if (!geminiKey) return NextResponse.json({ error: "Google API Key is required" }, { status: 401 });
 
-      const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+      // v1beta models are accessed via models/ prefix in URL
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+      
+      const geminiResponse = await fetch(geminiUrl, {
         method: "POST",
         headers: { "x-goog-api-key": geminiKey, "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -43,7 +47,7 @@ export async function POST(req: Request) {
             if (isLastMessage && imageData) {
               parts.push({ inline_data: { mime_type: imageData.mimeType, data: imageData.base64Data } });
             }
-            const textContent = m.content.replace(/data:image\/[^;]+;base64,[^ \n]+/, "").trim();
+            const textContent = (m.content || "").replace(/data:image\/[^;]+;base64,[^ \n]+/, "").trim();
             parts.push({ text: textContent });
             return { role: m.role === "assistant" ? "model" : "user", parts };
           }),

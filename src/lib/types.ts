@@ -35,19 +35,19 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     provider: "openai"
   },
   { 
-    id: "claude-3-5-sonnet-20241022", 
+    id: "claude-3-5-sonnet-latest", 
     name: "Claude 3.5 Sonnet", 
     description: "Exceptional reasoning, coding, and character.",
     provider: "anthropic"
   },
   { 
-    id: "gemini-1.5-pro", 
+    id: "gemini-1.5-pro-latest", 
     name: "Advanced Analysis (Gemini)", 
     description: "Google's most capable model for sophisticated reasoning.",
     provider: "google"
   },
   { 
-    id: "gemini-1.5-flash", 
+    id: "gemini-1.5-flash-latest", 
     name: "Swift & Adaptive (Gemini)", 
     description: "Fast responses with an expansive cognitive window.",
     provider: "google"
