@@ -124,9 +124,13 @@ export async function POST(req: Request) {
       return { role: m.role, content: textContent };
     });
 
-    // Phase 7: Advanced Agentic Loop using AgentExecutor
+    // Phase 6 & 7: Advanced Agentic Loop using AgentExecutor
     const { AgentExecutor } = await import("@/lib/agents/executor");
-    const executor = new AgentExecutor(openaiKey, requestId);
+    const executor = new AgentExecutor(openaiKey || "", requestId, {
+      anthropicKey,
+      geminiKey,
+      searchKey: body.searchKey || req.headers.get("X-Search-Key")?.trim() || undefined
+    });
     
     // DBからマネージャーの情報を取得し、プロンプトを動的に生成
     console.log(`[API:${requestId}] Loading Manager agent info...`);

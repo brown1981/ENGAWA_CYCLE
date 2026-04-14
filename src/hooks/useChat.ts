@@ -37,15 +37,6 @@ export function useChat() {
     };
   }, []);
 
-  const sendMessage = useCallback(async (content: string, image?: string | null) => {
-    if (!content.trim() && !image) return;
-    if (isLoading) return;
-
-    if (!apiKey) {
-      setError("AI Key が設定されていません。設定画面で API キーを正しく入力してください。");
-      return;
-    }
-
     setIsLoading(true);
     setError(null);
 
@@ -75,6 +66,22 @@ export function useChat() {
       updateSession(targetSession.id, { messages: payloadMessages });
     }
 
+    if (!apiKey) {
+      const authErrorMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: "⚠️ **認証エラー**: AIの知能（APIキー）が設定されていません。[OS Preferences] からAPIキーを正しく入力してください。設定後、このメッセージに続けて再度指示を出していただけます。",
+        createdAt: new Date().toISOString(),
+      };
+      
+      updateSession(targetSession.id, (prev) => ({ 
+        messages: [...prev.messages, authErrorMessage] 
+      }));
+      
+      setIsLoading(false);
+      return;
+    }
+
     abortControllerRef.current = new AbortController();
     
     const timeoutId = setTimeout(() => {
@@ -98,6 +105,7 @@ export function useChat() {
           messages: payloadMessages,
           model: model,
           image: image,
+          searchKey: settings.searchKey,
           customInstructions: settings.customInstructions
         }),
         signal: abortControllerRef.current.signal

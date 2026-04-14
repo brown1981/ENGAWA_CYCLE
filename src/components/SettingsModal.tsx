@@ -141,7 +141,17 @@ export function SettingsModal({
                       placeholder="eyJ..."
                       className="w-full bg-background/50 border border-border/20 rounded-xl px-5 py-3 text-xs focus:outline-none font-mono"
                     />
-                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <span className="text-[9px] font-bold uppercase tracking-widest opacity-40 ml-1">Search Intelligence Access</span>
+                  <input 
+                    type="password"
+                    value={settings.searchKey || ""}
+                    onChange={(e) => updateSettings({ searchKey: e.target.value })}
+                    placeholder="Tavily / Serper Key"
+                    className="w-full bg-background/50 border border-border/20 rounded-xl px-5 py-3 text-xs focus:outline-none focus:ring-1 focus:ring-accent/30 font-mono"
+                  />
                 </div>
 
                 <div className="space-y-2">

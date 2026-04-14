@@ -21,24 +21,29 @@ export const get_crypto_price: ToolDefinition = {
       },
     },
     required: ["symbol"],
-  },
   execute: async ({ symbol, currency = "JPY" }) => {
     try {
       const sym = symbol.toUpperCase();
       const curr = currency.toUpperCase();
+
+      // リアルタイム価格（Crypto/USDT）と為替（USD/JPY）を併行取得
+      const [cryptoRes, forexRes] = await Promise.all([
+        fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${sym}USDT`),
+        fetch("https://api.binance.com/api/v3/ticker/price?symbol=USDCJPY")
+      ]);
+
+      if (!cryptoRes.ok) throw new Error(`Symbol ${sym} not found or API error.`);
       
-      // Binance Public API を使用（キー不要）
-      const response = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${sym}USDT`);
-      
-      if (!response.ok) {
-        throw new Error(`Symbol ${sym} not found or API error.`);
+      const cryptoData = await cryptoRes.json();
+      const priceInUsd = parseFloat(cryptoData.price);
+
+      let usdJpyRate = 150; // Fallback
+      if (forexRes.ok) {
+        const forexData = await forexRes.json();
+        if (forexData?.price) usdJpyRate = parseFloat(forexData.price);
       }
 
-      const data = await response.json();
-      const priceInUsd = parseFloat(data.price);
-      
-      // JPY の場合は簡易換算（1ドル=150円、本来は為替APIを叩くべきだがまずはシンプルに）
-      const finalPrice = curr === "JPY" ? priceInUsd * 150 : priceInUsd;
+      const finalPrice = curr === "JPY" ? priceInUsd * usdJpyRate : priceInUsd;
 
       return {
         symbol: sym,

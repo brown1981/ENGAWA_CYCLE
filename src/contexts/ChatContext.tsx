@@ -120,7 +120,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             ...parsed,
             openaiKey: sanitizeKey(parsed.openaiKey, "OpenAI"),
             anthropicKey: sanitizeKey(parsed.anthropicKey, "Anthropic"),
-            geminiKey: sanitizeKey(parsed.geminiKey, "Gemini")
+            geminiKey: sanitizeKey(parsed.geminiKey, "Gemini"),
+            searchKey: sanitizeKey(parsed.searchKey, "Search")
           };
         } catch (e) {}
       }
@@ -143,7 +144,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         ...updates,
         openaiKey: updates.openaiKey !== undefined ? sanitizeKey(updates.openaiKey, "OpenAI") : prev.openaiKey,
         anthropicKey: updates.anthropicKey !== undefined ? sanitizeKey(updates.anthropicKey, "Anthropic") : prev.anthropicKey,
-        geminiKey: updates.geminiKey !== undefined ? sanitizeKey(updates.geminiKey, "Gemini") : prev.geminiKey
+        geminiKey: updates.geminiKey !== undefined ? sanitizeKey(updates.geminiKey, "Gemini") : prev.geminiKey,
+        searchKey: updates.searchKey !== undefined ? sanitizeKey(updates.searchKey, "Search") : prev.searchKey
       };
       localStorage.setItem("workspace_settings", JSON.stringify(next));
       return next;

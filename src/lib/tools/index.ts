@@ -14,14 +14,15 @@ export interface ToolDefinition {
   execute: (args: any) => Promise<any>;
 }
 
-// ツール個別ファイルをインポート
 import { get_crypto_price } from "./crypto";
 import { manage_tasks } from "./tasks";
+import { web_search } from "./web_search";
 
 // ツール一覧の登録
 export const tools: Record<string, ToolDefinition> = {
   get_crypto_price,
   manage_tasks,
+  web_search,
 };
 
 // OpenAI形式のスキーマ一覧を生成

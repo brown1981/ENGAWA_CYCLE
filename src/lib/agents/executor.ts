@@ -12,10 +12,12 @@ export class AgentExecutor {
   private maxLoops: number;
   private agentId: string | null = null;
   private agentInfo: any = null;
+  private extraKeys: { anthropicKey?: string; geminiKey?: string; searchKey?: string; } = {};
 
-  constructor(apiKey: string, requestId: string, maxLoops: number = 5) {
+  constructor(apiKey: string, requestId: string, extraKeys: { anthropicKey?: string; geminiKey?: string; searchKey?: string; } = {}, maxLoops: number = 5) {
     this.openai = new OpenAI({ apiKey, timeout: 25000 });
     this.requestId = requestId;
+    this.extraKeys = extraKeys;
     this.maxLoops = maxLoops;
   }
 
@@ -82,7 +84,11 @@ export class AgentExecutor {
         if (tool) {
           try {
             const args = JSON.parse(toolCall.function.arguments);
-            const result = await tool.execute(args);
+            const result = await tool.execute(args, {
+              requestId: this.requestId,
+              agentId: this.agentId,
+              ...this.extraKeys
+            });
             
             // Phase 7: 自動業務記録 (タスクログ)
             if (this.agentId) {

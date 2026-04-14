@@ -77,8 +77,9 @@ export type GlobalSettings = {
   supabaseAnonKey?: string;
   syncKey?: string;
   // Phase 4.2, 4.3 & 6: Multi-provider & Persistence
-  openaiKey?: string; // Integrated for persistence support
+  openaiKey?: string; 
   anthropicKey?: string;
   geminiKey?: string;
+  searchKey?: string; 
   customInstructions?: string;
 };
