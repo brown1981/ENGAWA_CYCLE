@@ -37,6 +37,10 @@ export function useChat() {
     };
   }, []);
 
+  const sendMessage = useCallback(async (content: string, image?: string | null) => {
+    if (!content.trim() && !image) return;
+    if (isLoading) return;
+
     setIsLoading(true);
     setError(null);
 

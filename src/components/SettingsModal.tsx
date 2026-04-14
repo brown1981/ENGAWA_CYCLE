@@ -141,6 +141,7 @@ export function SettingsModal({
                       placeholder="eyJ..."
                       className="w-full bg-background/50 border border-border/20 rounded-xl px-5 py-3 text-xs focus:outline-none font-mono"
                     />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
