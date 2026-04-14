@@ -34,13 +34,16 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 function sanitizeKey(key: string, name: string): string {
   if (!key) return "";
   let clean = key.trim();
-  // Remove accidental command prefix if present (Vercel Log evidence found "npx ...")
-  if (clean.toLowerCase().includes("npx ") || clean.toLowerCase().includes("supabase")) {
-    console.warn(`[ChatContext] Detected command-like string in ${name} field. Removing...`);
-    // Heuristic: If SK is hidden somewhere inside, extract it, otherwise clear it.
-    const match = clean.match(/(sk-[a-zA-Z0-9]+)/);
-    return match ? match[1] : "";
+  
+  // Only strip if it explicitly looks like a 'npx supabase' command
+  if (clean.toLowerCase().startsWith("npx ") || clean.toLowerCase().startsWith("supabase ")) {
+    console.warn(`[ChatContext] Detected command prefix in ${name} field. Attempting extraction...`);
+    // Try to find the actual key (usually the last long alphanumeric string)
+    const segments = clean.split(/\s+/);
+    const potentialKey = segments.find(s => s.length > 20 && !s.includes("="));
+    return potentialKey || "";
   }
+  
   return clean;
 }
 
