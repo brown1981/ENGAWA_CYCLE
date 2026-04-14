@@ -87,7 +87,7 @@ export default function Home() {
             messages.map((m, idx) => {
               return (
                 <div key={m.id} className={`group flex flex-col space-y-4 animate-float-in ${m.role === 'user' ? 'items-end' : 'items-start'}`} style={{ animationDelay: `${idx * 0.05}s` }}>
-                  <div className={`chat-bubble-p px-6 py-4.5 rounded-[calc(var(--radius)*0.8)] shadow-sm max-w-[88%] liquid-transition ${m.role === 'user' ? 'bg-accent text-accent-foreground rounded-tr-none' : 'bg-card text-card-foreground rounded-tl-none border border-border/40 backdrop-blur-sm'}`}>
+                  <div className={`chat-bubble-p px-6 py-4 rounded-[calc(var(--radius)*0.8)] shadow-sm max-w-[88%] liquid-transition ${m.role === 'user' ? 'bg-accent text-accent-foreground rounded-tr-none' : 'bg-card text-card-foreground rounded-tl-none border border-border/40 backdrop-blur-sm'}`}>
                     {m.content.includes("data:image") && (
                        <img src={m.content.match(/data:image\/[^;]+;base64,[^ \n]+/)?.[0]} alt="Attached" className="rounded-lg mb-3.5 max-h-72 object-cover w-full shadow-lg" />
                     )}
