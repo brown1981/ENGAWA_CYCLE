@@ -78,6 +78,9 @@ export default function Home() {
             </div>
           )}
 
+          {messages.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center opacity-10 animate-soft-in">
+              <BrainCircuit size={48} className="mb-6 stroke-[1]" />
               <p className="text-[11px] font-bold uppercase tracking-[0.3em]">思考を、そのままの形で。</p>
             </div>
           ) : (

@@ -214,7 +214,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       sessions, currentSessionId, setCurrentSessionId, createSession, updateSession, upsertSession,
       removeSession, apiKey, setApiKey, model, setModel: setModelInContext, settings, updateSettings
     }}>
-    }}>
       {children}
     </ChatContext.Provider>
   );
