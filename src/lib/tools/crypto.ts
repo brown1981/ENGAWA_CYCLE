@@ -21,6 +21,7 @@ export const get_crypto_price: ToolDefinition = {
       },
     },
     required: ["symbol"],
+  },
   execute: async ({ symbol, currency = "JPY" }) => {
     try {
       const sym = symbol.toUpperCase();
