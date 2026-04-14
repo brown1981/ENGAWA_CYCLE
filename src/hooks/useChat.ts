@@ -1,16 +1,16 @@
-import { useState, useCallback, useMemo } from "react";
-import { ChatMessage } from "@/lib/types";
+"use client";
+
+import { useState, useCallback, useRef } from "react";
+import { ChatMessage, ChatSession } from "@/lib/types";
 import { useChatContext } from "@/contexts/ChatContext";
 
 export function useChat() {
-  const {
-    sessions,
-    currentSessionId,
-    setCurrentSessionId,
-    createSession,
-    updateSession,
+  const { 
+    sessions, 
+    currentSessionId, 
+    updateSession, 
+    createSession: contextCreateSession,
     apiKey,
-    setApiKey,
     model,
     setModel,
     settings
@@ -18,47 +18,26 @@ export function useChat() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  // アニメーション表示用のバッファ（Phase 3）
   const [streamingContent, setStreamingContent] = useState("");
+  
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const currentSession = useMemo(() => 
-    sessions.find(s => s.id === currentSessionId), 
-    [sessions, currentSessionId]
-  );
+  const currentSession = sessions.find(s => s.id === currentSessionId);
+  const messages = currentSession?.messages || [];
 
-  const messages = useMemo(() => 
-    currentSession?.messages || [], 
-    [currentSession]
-  );
-
-  // タイピングアニメーションのシミュレーション（簡易版）
-  const animateText = useCallback(async (fullText: string, sessionId: string, messageId: string) => {
-    if (settings.typingSpeed === 0) {
-      updateAssistantMessage(sessionId, messageId, fullText);
-      return;
+  const stopGeneration = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+      setIsLoading(false);
     }
+  }, []);
 
-    let currentText = "";
-    const chars = Array.from(fullText);
-    const msPerChar = settings.typingSpeed / 2;
-
-    for (let char of chars) {
-      currentText += char;
-      setStreamingContent(currentText);
-      await new Promise(r => setTimeout(r, msPerChar));
+  const clearMessages = useCallback(() => {
+    if (currentSessionId) {
+      updateSession(currentSessionId, { messages: [] });
     }
-
-    updateAssistantMessage(sessionId, messageId, fullText);
-    setStreamingContent("");
-  }, [settings.typingSpeed]);
-
-  const updateAssistantMessage = useCallback((sessionId: string, messageId: string, content: string) => {
-    // 関数型アップデートを使用して、常に最新の messages 配列に対して更新を行う
-    updateSession(sessionId, (prev) => ({
-      messages: prev.messages.map(m => m.id === messageId ? { ...m, content } : m)
-    }));
-  }, [updateSession]);
+  }, [currentSessionId, updateSession]);
 
   const sendMessage = useCallback(async (content: string, image?: string | null) => {
     if (!content.trim() && !image) return;
@@ -69,15 +48,13 @@ export function useChat() {
 
     let targetSession = currentSession;
     if (!targetSession) {
-      targetSession = createSession(content.slice(0, 20) || "Image Analysis");
+      targetSession = contextCreateSession(content.slice(0, 20) || "Image Analysis");
     }
 
-    const fullContent = image ? `${content}\n\n[IMAGE_DATA:${image.slice(0, 50)}...]` : content;
-    
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
       role: "user",
-      content: image ? `${image}\n\n${content}` : content, // Store image at the start of content for simple detection
+      content: image ? `${image}\n\n${content}` : content,
       createdAt: new Date().toISOString(),
     };
 
@@ -92,6 +69,10 @@ export function useChat() {
 
     setIsLoading(true);
     setError(null);
+    setStreamingContent("");
+
+    // Initialize AbortController
+    abortControllerRef.current = new AbortController();
 
     try {
       const response = await fetch("/api/chat", {
@@ -106,61 +87,64 @@ export function useChat() {
           messages: [...(targetSession?.messages || []), userMessage],
           model: targetSession?.model || model,
           image: image,
-          customInstructions: settings.customInstructions // Phase 6: Inject Personality
+          customInstructions: settings.customInstructions
         }),
+        signal: abortControllerRef.current.signal
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || "Failed to fetch response");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch from AI");
       }
 
-      const assistantMessageId = data.id || crypto.randomUUID();
+      const data = await response.json();
+      
       const assistantMessage: ChatMessage = {
-        id: assistantMessageId,
-        role: data.role || "assistant",
+        id: data.id || crypto.randomUUID(),
+        role: "assistant",
         content: data.content,
-        createdAt: data.createdAt || new Date().toISOString(),
+        createdAt: new Date().toISOString(),
       };
 
-      // Phase 3: タイピングアニメーションを適用
-      if (settings.typingSpeed > 0) {
-        const placeholderMsg = { ...assistantMessage, content: "" };
-        updateSession(targetSession.id, (prev) => ({ messages: [...prev.messages, placeholderMsg] }));
-        await animateText(data.content, targetSession.id, assistantMessageId);
-      } else {
-        updateSession(targetSession.id, (prev) => ({ messages: [...prev.messages, assistantMessage] }));
-      }
-    } catch (err: any) {
-      setError(err.message || "予期せぬエラーが発生しました");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [apiKey, currentSession, createSession, updateSession, model, settings.typingSpeed, animateText]);
+      // シミュレーション：タイピングエフェクト
+      let i = 0;
+      const interval = setInterval(() => {
+        setStreamingContent(prev => prev + data.content[i]);
+        i++;
+        if (i >= data.content.length) {
+          clearInterval(interval);
+          updateSession(targetSession.id, (prev) => ({
+            messages: [...prev.messages, assistantMessage]
+          }));
+          setStreamingContent("");
+          setIsLoading(false);
+          abortControllerRef.current = null;
+        }
+      }, settings.typingSpeed || 20);
 
-  const clearMessages = useCallback(() => {
-    if (currentSessionId) {
-      updateSession(currentSessionId, { messages: [] });
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        console.log("Generation aborted by user");
+        return;
+      }
+      setError(err.message);
+      setIsLoading(false);
+      abortControllerRef.current = null;
     }
-  }, [currentSessionId, updateSession]);
+  }, [apiKey, currentSession, contextCreateSession, model, updateSession, settings, stopGeneration]);
 
   return {
     messages,
+    sendMessage,
+    stopGeneration,
     apiKey,
-    setApiKey,
+    setApiKey: (key: string) => {}, // Managed via context now, but keep hook interface
     model,
     setModel,
-    sendMessage,
     clearMessages,
     isLoading,
     error,
-    setError,
-    sessions,
-    currentSessionId,
-    setCurrentSessionId,
-    createSession,
-    settings,
+    createSession: contextCreateSession,
     streamingContent
   };
 }

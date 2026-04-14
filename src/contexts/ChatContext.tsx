@@ -12,7 +12,7 @@ interface ChatContextType {
   createSession: (title?: string) => ChatSession;
   updateSession: (id: string, updates: Partial<ChatSession> | ((prev: ChatSession) => Partial<ChatSession>)) => void;
   removeSession: (id: string) => void;
-  apiKey: string;
+  apiKey: string; // Keep interface compatibility for now, but link to settings
   setApiKey: (key: string) => void;
   model: string;
   setModel: (model: string) => void;
@@ -32,10 +32,12 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
-  const [apiKey, setApiKey] = useState<string>("");
   const [model, setModel] = useState<string>("gpt-4o-search-preview");
   const [settings, setSettings] = useState<GlobalSettings>(DEFAULT_SETTINGS);
   const isInitialized = useRef(false);
+
+  // Computed API Key for backward compatibility
+  const apiKey = settings.openaiKey || "";
 
   // Helper for remote save
   const syncToSupabase = useCallback(async (session: ChatSession, syncKey?: string, url?: string, anonKey?: string) => {
@@ -66,6 +68,18 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       );
     }
   }, [settings.supabaseUrl, settings.supabaseAnonKey, settings.syncKey]);
+
+  const updateSettings = useCallback((updates: Partial<GlobalSettings>) => {
+    setSettings(prev => {
+      const next = { ...prev, ...updates };
+      localStorage.setItem("workspace_settings", JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const setApiKey = useCallback((key: string) => {
+    updateSettings({ openaiKey: key });
+  }, [updateSettings]);
 
   // Load state from DB & LocalStorage on mount
   useEffect(() => {
@@ -164,8 +178,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         // Simple strategy: reload list on external change
         if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
           const fresh = await getAllSessions(); // Reload from local + remote logic could be complex, for now reload local
-          // This part needs better merge logic if we want true instant multi-device, 
-          // but for basic MVP, polling-like re-fetch is safer.
         }
       })
       .subscribe();
@@ -174,14 +186,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       supabase.removeChannel(channel);
     };
   }, [settings.supabaseUrl, settings.supabaseAnonKey, settings.syncKey]);
-
-  const updateSettings = useCallback((updates: Partial<GlobalSettings>) => {
-    setSettings(prev => {
-      const next = { ...prev, ...updates };
-      localStorage.setItem("workspace_settings", JSON.stringify(next));
-      return next;
-    });
-  }, []);
 
   const createSession = useCallback((title = "New Chat") => {
     const newSession: ChatSession = {

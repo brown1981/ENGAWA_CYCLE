@@ -17,8 +17,6 @@ interface SettingsModalProps {
 export function SettingsModal({
   isOpen,
   onClose,
-  apiKey,
-  setApiKey,
   model,
   setModel
 }: SettingsModalProps) {
@@ -47,6 +45,7 @@ export function SettingsModal({
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold tracking-tight">Settings</h2>
           <button 
+            type="button"
             onClick={onClose}
             className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
           >
@@ -54,9 +53,9 @@ export function SettingsModal({
           </button>
         </div>
 
-        <div className="space-y-8 max-h-[65vh] overflow-y-auto pr-2 custom-scrollbar pb-4">
+        <div className="space-y-8 max-h-[65vh] overflow-y-auto pr-2 custom-scrollbar pb-4 text-zinc-900 dark:text-zinc-100">
           
-          {/* Phase 6: AI Personality (System Prompt) */}
+          {/* Phase 6: AI Personality */}
           <section className="space-y-3">
             <label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-30 flex items-center gap-2">
               <Sparkles size={12} /> AI Personality
@@ -67,9 +66,6 @@ export function SettingsModal({
               placeholder="例：あなたは論理的で簡潔な回答を好む、テック系コンサルタントです。日本語で回答してください。"
               className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-accent transition-all resize-none min-h-[100px] leading-relaxed"
             />
-            <p className="text-[10px] opacity-20 px-2 leading-relaxed">
-              * ここに入力した指示は、すべての対話とモデルに適用されます。
-            </p>
           </section>
 
           {/* Intelligence Engine */}
@@ -81,6 +77,7 @@ export function SettingsModal({
               {AVAILABLE_MODELS.map((m) => (
                 <button
                   key={m.id}
+                  type="button"
                   onClick={() => setModel(m.id)}
                   className={`
                     flex flex-col items-start px-5 py-3 rounded-2xl border transition-all text-left
@@ -101,13 +98,13 @@ export function SettingsModal({
             </div>
           </section>
 
-          {/* API Keys - Multiple Providers */}
+          {/* API Keys - Unified Persistence & Password Manager Optimized */}
           <section className="space-y-4">
             <label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-30 flex items-center gap-2">
               <BrainCircuit size={12} /> Provider Keys
             </label>
             
-            <div className="space-y-3">
+            <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
               <div className="space-y-1.5">
                 <div className="flex justify-between px-2">
                   <span className="text-[9px] font-bold opacity-30">OPENAI</span>
@@ -115,8 +112,10 @@ export function SettingsModal({
                 </div>
                 <input
                   type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
+                  name="openai_key"
+                  autoComplete="current-password"
+                  value={settings.openaiKey || ""}
+                  onChange={(e) => updateSettings({ openaiKey: e.target.value })}
                   placeholder="sk-..."
                   className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-5 py-3.5 text-xs focus:outline-none focus:ring-1 focus:ring-accent transition-all"
                 />
@@ -129,6 +128,8 @@ export function SettingsModal({
                 </div>
                 <input
                   type="password"
+                  name="anthropic_key"
+                  autoComplete="current-password"
                   value={settings.anthropicKey || ""}
                   onChange={(e) => updateSettings({ anthropicKey: e.target.value })}
                   placeholder="sk-ant-..."
@@ -143,13 +144,15 @@ export function SettingsModal({
                 </div>
                 <input
                   type="password"
+                  name="gemini_key"
+                  autoComplete="current-password"
                   value={settings.geminiKey || ""}
                   onChange={(e) => updateSettings({ geminiKey: e.target.value })}
                   placeholder="AIza..."
                   className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-5 py-3.5 text-xs focus:outline-none focus:ring-1 focus:ring-accent transition-all"
                 />
               </div>
-            </div>
+            </form>
           </section>
 
           {/* Cloud Sync Section */}
@@ -164,14 +167,15 @@ export function SettingsModal({
                 value={settings.supabaseUrl || ""}
                 onChange={(e) => updateSettings({ supabaseUrl: e.target.value })}
                 placeholder="Supabase Project URL"
-                className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-xs focus:outline-none"
+                className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-xs focus:outline-none shadow-sm"
               />
               <input
                 type="password"
                 value={settings.supabaseAnonKey || ""}
                 onChange={(e) => updateSettings({ supabaseAnonKey: e.target.value })}
                 placeholder="Supabase Anon Key"
-                className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-xs focus:outline-none"
+                className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-xs focus:outline-none shadow-sm"
+                autoComplete="current-password"
               />
               <div className="relative">
                 <input
@@ -179,7 +183,7 @@ export function SettingsModal({
                   value={settings.syncKey || ""}
                   onChange={(e) => updateSettings({ syncKey: e.target.value })}
                   placeholder="Sync Key (Enter or Generate)"
-                  className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-xs focus:outline-none pr-20"
+                  className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-xs focus:outline-none pr-20 shadow-sm"
                 />
                 <div className="absolute right-2 top-1.5 flex gap-1">
                   {settings.syncKey && (
@@ -209,6 +213,7 @@ export function SettingsModal({
                 {(["pure-black", "glass", "paper"] as AppTheme[]).map((t) => (
                   <button
                     key={t}
+                    type="button"
                     onClick={() => updateSettings({ theme: t })}
                     className={`
                       w-8 h-8 rounded-full border transition-all
@@ -242,7 +247,7 @@ export function SettingsModal({
             <select 
               value={settings.retentionDays}
               onChange={(e) => updateSettings({ retentionDays: parseInt(e.target.value) })}
-              className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm focus:outline-none appearance-none cursor-pointer"
+              className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm focus:outline-none appearance-none cursor-pointer shadow-sm"
             >
               <option value={0}>Forget immediately</option>
               <option value={7}>7 Days</option>
