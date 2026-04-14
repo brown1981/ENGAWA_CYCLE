@@ -166,6 +166,7 @@ export function SettingsModal({
                     <RefreshCw size={14} />
                   </button>
                 </div>
+              </div>
             </div>
           </section>
 
@@ -195,7 +196,7 @@ export function SettingsModal({
           </section>
         </div>
 
-        <footer className="mt-12 pt-8 border-t border-border/40 flex justify-between items-center">
+        <footer className="mt-8 pt-6 border-t border-border/40 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
             <span className="text-[9px] font-bold uppercase tracking-[0.3em] opacity-30">OS Secure Core v1.0.2</span>
@@ -206,7 +207,7 @@ export function SettingsModal({
           >
             Authorize Changes
           </button>
-        </div>
+        </footer>
       </div>
     </div>
   );
