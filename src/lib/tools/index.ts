@@ -11,7 +11,7 @@ export interface ToolDefinition {
     properties: Record<string, any>;
     required?: string[];
   };
-  execute: (args: any) => Promise<any>;
+  execute: (args: any, context?: any) => Promise<any>;
 }
 
 import { get_crypto_price } from "./crypto";
