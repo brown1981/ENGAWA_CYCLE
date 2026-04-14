@@ -203,41 +203,28 @@ export function SettingsModal({
             </div>
           </section>
 
-          {/* Theme & Aesthetics */}
-          <div className="grid grid-cols-2 gap-6">
-            <section className="space-y-3">
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-30 flex items-center gap-2">
-                <Palette size={12} /> Theme
-              </label>
-              <div className="flex gap-2">
-                {(["pure-black", "glass", "paper"] as AppTheme[]).map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => updateSettings({ theme: t })}
-                    className={`
-                      w-8 h-8 rounded-full border transition-all
-                      ${t === 'pure-black' ? 'bg-black' : t === 'glass' ? 'bg-zinc-200' : 'bg-[#fdfaf6]'}
-                      ${settings.theme === t ? "ring-2 ring-accent ring-offset-2" : "opacity-40"}
-                    `}
-                    title={t}
-                  />
-                ))}
-              </div>
-            </section>
-
-            <section className="space-y-3">
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-30 flex items-center gap-2">
-                <Zap size={12} /> Rhythm
-              </label>
-              <input 
-                type="range" min="0" max="100" step="10" 
-                value={settings.typingSpeed}
-                onChange={(e) => updateSettings({ typingSpeed: parseInt(e.target.value) })}
-                className="w-full accent-accent"
-              />
-            </section>
-          </div>
+          {/* Theme Section */}
+          <section className="space-y-3">
+            <label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-30 flex items-center gap-2">
+              <Palette size={12} /> Theme Selection
+            </label>
+            <div className="flex gap-4 p-4 bg-zinc-50 dark:bg-zinc-950 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+              {(["pure-black", "glass", "paper"] as AppTheme[]).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => updateSettings({ theme: t })}
+                  className={`
+                    flex-1 py-4 rounded-xl border transition-all flex flex-col items-center gap-2
+                    ${settings.theme === t ? "bg-accent/5 border-accent ring-1 ring-accent opacity-100" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 opacity-40 hover:opacity-80"}
+                  `}
+                >
+                  <div className={`w-4 h-4 rounded-full ${t === 'pure-black' ? 'bg-black' : t === 'glass' ? 'bg-zinc-300' : 'bg-[#fdfaf6] border border-zinc-200'}`} />
+                  <span className="text-[9px] font-bold uppercase tracking-widest">{t}</span>
+                </button>
+              ))}
+            </div>
+          </section>
 
           {/* Retention Section */}
           <section className="space-y-3">

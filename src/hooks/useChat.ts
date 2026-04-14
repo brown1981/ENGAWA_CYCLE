@@ -13,10 +13,8 @@ export function useChat() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [streamingContent, setStreamingContent] = useState("");
   
   const abortControllerRef = useRef<AbortController | null>(null);
-  const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const currentSession = sessions.find(s => s.id === currentSessionId);
   const messages = currentSession?.messages || [];
@@ -26,12 +24,7 @@ export function useChat() {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
-    if (typingIntervalRef.current) {
-      clearInterval(typingIntervalRef.current);
-      typingIntervalRef.current = null;
-    }
     setIsLoading(false);
-    setStreamingContent("");
   }, []);
 
   const clearMessages = useCallback(() => {
@@ -40,7 +33,6 @@ export function useChat() {
 
   useEffect(() => {
     return () => {
-      if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
       if (abortControllerRef.current) abortControllerRef.current.abort();
     };
   }, []);
@@ -56,7 +48,6 @@ export function useChat() {
 
     setIsLoading(true);
     setError(null);
-    setStreamingContent("");
 
     let targetSession = currentSession;
     const userMessage: ChatMessage = {
@@ -130,45 +121,12 @@ export function useChat() {
         createdAt: new Date().toISOString(),
       };
 
-      // Phase 35: IMMEDIATE BUBBLE INJECTION
-      // AIからデータが届いた瞬間、空のメッセージ（あるいはプレースホルダ）を配列に追加して画面に出す
       updateSession(targetSession!.id, (prev) => ({ 
-        messages: [...prev.messages, { ...assistantMessage, content: "" }] 
+        messages: [...prev.messages, assistantMessage] 
       }));
 
-      let i = 0;
-      const fullContent = data.content || "";
-      if (typingIntervalRef.current) { clearInterval(typingIntervalRef.current); typingIntervalRef.current = null; }
-      
-      if (!fullContent) {
-        // もし中身が空なら、空のまま終了させる
-        setIsLoading(false);
-        return;
-      }
-
-      typingIntervalRef.current = setInterval(() => {
-        if (i < fullContent.length) {
-          // タイピング中の文字を streamingContent に入れる（page.tsx で合成表示する）
-          setStreamingContent(prev => prev + fullContent[i]);
-          i++;
-        } else {
-          if (typingIntervalRef.current) { clearInterval(typingIntervalRef.current); typingIntervalRef.current = null; }
-          
-          // タイピング完了後、正式にメッセージ内容を確定させる
-          updateSession(targetSession!.id, (prev) => {
-            const nextMessages = [...prev.messages];
-            const lastIdx = nextMessages.length - 1;
-            if (lastIdx >= 0 && nextMessages[lastIdx].role === "assistant") {
-              nextMessages[lastIdx] = { ...assistantMessage }; // 内容を上書き確定
-            }
-            return { messages: nextMessages };
-          });
-
-          setStreamingContent("");
-          setIsLoading(false);
-          abortControllerRef.current = null;
-        }
-      }, settings.typingSpeed || 20);
+      setIsLoading(false);
+      abortControllerRef.current = null;
 
     } catch (err: any) {
       clearTimeout(timeoutId);
@@ -176,7 +134,6 @@ export function useChat() {
       setError(err.message || "Unknown error occurred");
       setIsLoading(false);
       abortControllerRef.current = null;
-      setStreamingContent("");
       console.error("Chat Error:", err);
     }
   }, [apiKey, currentSession, upsertSession, updateSession, model, settings, isLoading]);
@@ -184,6 +141,6 @@ export function useChat() {
   return {
     messages, sendMessage, stopGeneration, apiKey, setApiKey: contextSetApiKey,
     model, setModel: contextSetModel, clearMessages, isLoading, error,
-    createSession: contextCreateSession, streamingContent
+    createSession: contextCreateSession
   };
 }

@@ -10,7 +10,7 @@ import { SettingsModal } from "@/components/SettingsModal";
 export default function Home() {
   const { 
     messages, sendMessage, stopGeneration, apiKey, 
-    model, setModel, isLoading, error, createSession, streamingContent
+    model, setModel, isLoading, error, createSession
   } = useChat();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -23,7 +23,7 @@ export default function Home() {
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [messages, streamingContent]);
+  }, [messages]);
 
   const handleSend = () => {
     // Phase 33: Multi-layer protection against race conditions
@@ -78,22 +78,20 @@ export default function Home() {
             </div>
           )}
 
-          {messages.length === 0 && !error ? (
+          {isLoading && messages.length === 0 && !error ? (
             <div className="h-full flex flex-col items-center justify-center opacity-10 space-y-4">
               <h1 className="text-5xl font-semibold tracking-tighter mix-blend-difference">Genesis</h1>
               <p className="text-[11px] font-bold uppercase tracking-[0.3em]">思考を、そのままの形で。</p>
             </div>
           ) : (
             messages.map((m, idx) => {
-              const isLast = idx === messages.length - 1;
-              const displayContent = (isLast && m.role === "assistant" && streamingContent) ? streamingContent : m.content;
               return (
                 <div key={m.id} className={`group flex flex-col space-y-4 ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
                   <div className={`chat-bubble px-6 py-5 rounded-[2rem] shadow-md max-w-[90%] transition-transform duration-300 ${m.role === 'user' ? 'bg-accent text-white rounded-tr-none shadow-accent/40' : 'bg-zinc-100 dark:bg-zinc-900 rounded-tl-none border border-zinc-200 dark:border-zinc-800'}`}>
                     {m.content.includes("data:image") && (
                        <img src={m.content.match(/data:image\/[^;]+;base64,[^ \n]+/)?.[0]} alt="Attached" className="rounded-xl mb-4 max-h-64 object-cover w-full shadow-lg" />
                     )}
-                    <div className="whitespace-pre-wrap leading-relaxed">{displayContent.replace(/data:image\/[^;]+;base64,[^ \n]+/, "").trim()}</div>
+                    <div className="whitespace-pre-wrap leading-relaxed">{m.content.replace(/data:image\/[^;]+;base64,[^ \n]+/, "").trim()}</div>
                   </div>
                   <div className="flex gap-4 px-4 opacity-0 group-hover:opacity-40 transition-opacity"><button onClick={() => navigator.clipboard.writeText(m.content)} className="hover:opacity-100"><Copy size={14} /></button>
                     {m.role === 'assistant' && <button onClick={() => exportToMarkdown(m.content)} className="hover:opacity-100"><Download size={14} /></button>}
@@ -103,7 +101,7 @@ export default function Home() {
             })
           )}
           
-          {isLoading && !streamingContent && (
+          {isLoading && (
             <div className="flex items-start"><div className="bg-zinc-100 dark:bg-zinc-900 px-6 py-5 rounded-[2rem] rounded-tl-none animate-pulse-slow"><span className="text-[10px] font-bold tracking-[0.2em] uppercase opacity-40">Synapsing...</span></div></div>
           )}
 
