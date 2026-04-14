@@ -91,10 +91,10 @@ export function useChat() {
     const timeoutId = setTimeout(() => {
       if (isLoading && abortControllerRef.current) {
         abortControllerRef.current.abort();
-        setError("通信が10秒を超えたためタイムアウトしました (Vercelの制限)。GPT-4o mini 等の軽量モデルへの切り替えをお勧めします。");
+        setError("エージェントの思考（マルチエージェント連携）に時間がかかりすぎたため、タイムアウトしました。より高速な 'gpt-4o-mini' を試すか、指示をより具体的に絞り込んでください。");
         setIsLoading(false);
       }
-    }, 12000);
+    }, 60000);
 
     try {
       const response = await fetch("/api/chat", {

@@ -109,13 +109,36 @@ export function SettingsModal({
             </h3>
             
             <div className="bg-secondary/15 p-8 rounded-2xl border border-border/10 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <span className="text-[9px] font-bold uppercase tracking-widest opacity-40 ml-1">OpenAI API Access</span>
+                  <input 
+                    type="password"
+                    value={settings.openaiKey || ""}
+                    onChange={(e) => updateSettings({ openaiKey: e.target.value })}
+                    placeholder="sk-..."
+                    className="w-full bg-background/50 border border-border/20 rounded-xl px-5 py-3 text-xs focus:outline-none focus:ring-1 focus:ring-accent/30 font-mono"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <span className="text-[9px] font-bold uppercase tracking-widest opacity-40 ml-1">Anthropic API Access</span>
+                  <input 
+                    type="password"
+                    value={settings.anthropicKey || ""}
+                    onChange={(e) => updateSettings({ anthropicKey: e.target.value })}
+                    placeholder="sk-ant-..."
+                    className="w-full bg-background/50 border border-border/20 rounded-xl px-5 py-3 text-xs focus:outline-none focus:ring-1 focus:ring-accent/30 font-mono"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
-                <span className="text-[9px] font-bold uppercase tracking-widest opacity-40 ml-1">OpenAI API Access</span>
+                <span className="text-[9px] font-bold uppercase tracking-widest opacity-40 ml-1">Google Gemini Access</span>
                 <input 
                   type="password"
-                  value={settings.openaiKey || ""}
-                  onChange={(e) => updateSettings({ openaiKey: e.target.value })}
-                  placeholder="sk-..."
+                  value={settings.geminiKey || ""}
+                  onChange={(e) => updateSettings({ geminiKey: e.target.value })}
+                  placeholder="AIza..."
                   className="w-full bg-background/50 border border-border/20 rounded-xl px-5 py-3 text-xs focus:outline-none focus:ring-1 focus:ring-accent/30 font-mono"
                 />
               </div>
