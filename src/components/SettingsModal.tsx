@@ -108,71 +108,69 @@ export function SettingsModal({
               <Cloud size={12} /> Registry & Connectivity
             </h3>
             
-            <div className="grid grid-cols-1 gap-5 bg-secondary/15 p-8 rounded-2xl border border-border/10">
-              <div className="space-y-4">
+            <div className="bg-secondary/15 p-8 rounded-2xl border border-border/10 space-y-6">
+              <div className="space-y-2">
+                <span className="text-[9px] font-bold uppercase tracking-widest opacity-40 ml-1">OpenAI API Access</span>
+                <input 
+                  type="password"
+                  value={settings.openaiKey || ""}
+                  onChange={(e) => updateSettings({ openaiKey: e.target.value })}
+                  placeholder="sk-..."
+                  className="w-full bg-background/50 border border-border/20 rounded-xl px-5 py-3 text-xs focus:outline-none focus:ring-1 focus:ring-accent/30 font-mono"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <span className="text-[9px] font-bold uppercase tracking-widest opacity-40 ml-1">OpenAI API Access</span>
+                  <span className="text-[9px] font-bold uppercase tracking-widest opacity-40 ml-1">Supabase Endpoint</span>
                   <input 
-                    type="password"
-                    value={settings.openaiKey || ""}
-                    onChange={(e) => updateSettings({ openaiKey: e.target.value })}
-                    placeholder="sk-..."
-                    className="w-full bg-background/50 border border-border/20 rounded-xl px-5 py-3 text-xs focus:outline-none focus:ring-1 focus:ring-accent/30 font-mono"
+                    type="text"
+                    value={settings.supabaseUrl || ""}
+                    onChange={(e) => updateSettings({ supabaseUrl: e.target.value })}
+                    placeholder="https://..."
+                    className="w-full bg-background/50 border border-border/20 rounded-xl px-5 py-3 text-xs focus:outline-none font-mono"
                   />
                 </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <span className="text-[9px] font-bold uppercase tracking-widest opacity-40 ml-1">Supabase Endpoint</span>
-                    <input 
-                      type="text"
-                      value={settings.supabaseUrl || ""}
-                      onChange={(e) => updateSettings({ supabaseUrl: e.target.value })}
-                      placeholder="https://..."
-                      className="w-full bg-background/50 border border-border/20 rounded-xl px-5 py-3 text-xs focus:outline-none font-mono"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <span className="text-[9px] font-bold uppercase tracking-widest opacity-40 ml-1">Database Key</span>
-                    <input 
-                      type="password"
-                      value={settings.supabaseAnonKey || ""}
-                      onChange={(e) => updateSettings({ supabaseAnonKey: e.target.value })}
-                      placeholder="eyJ..."
-                      className="w-full bg-background/50 border border-border/20 rounded-xl px-5 py-3 text-xs focus:outline-none font-mono"
-                    />
-                  </div>
-                </div>
-
                 <div className="space-y-2">
-                  <span className="text-[9px] font-bold uppercase tracking-widest opacity-40 ml-1">Search Intelligence Access</span>
+                  <span className="text-[9px] font-bold uppercase tracking-widest opacity-40 ml-1">Database Key</span>
                   <input 
                     type="password"
-                    value={settings.searchKey || ""}
-                    onChange={(e) => updateSettings({ searchKey: e.target.value })}
-                    placeholder="Tavily / Serper Key"
-                    className="w-full bg-background/50 border border-border/20 rounded-xl px-5 py-3 text-xs focus:outline-none focus:ring-1 focus:ring-accent/30 font-mono"
+                    value={settings.supabaseAnonKey || ""}
+                    onChange={(e) => updateSettings({ supabaseAnonKey: e.target.value })}
+                    placeholder="eyJ..."
+                    className="w-full bg-background/50 border border-border/20 rounded-xl px-5 py-3 text-xs focus:outline-none font-mono"
                   />
                 </div>
+              </div>
 
-                <div className="space-y-2">
-                  <span className="text-[9px] font-bold uppercase tracking-widest opacity-40 ml-1">Organization-Level Sync Key</span>
-                  <div className="relative">
-                    <input 
-                      type="text"
-                      value={settings.syncKey || ""}
-                      onChange={(e) => updateSettings({ syncKey: e.target.value })}
-                      placeholder="UUID"
-                      className="w-full bg-background/50 border border-border/20 rounded-xl px-5 py-3 text-xs focus:outline-none font-mono pr-20"
-                    />
-                    <div className="absolute right-2 top-1.5 flex gap-1">
-                      <button onClick={handleCopy} className="p-1.5 opacity-20 hover:opacity-100 hover:bg-secondary rounded-lg liquid-transition">
-                        {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
-                      </button>
-                      <button onClick={generateSyncKey} className="p-1.5 opacity-20 hover:opacity-100 hover:bg-secondary rounded-lg liquid-transition">
-                        <RefreshCw size={12} />
-                      </button>
-                    </div>
+              <div className="space-y-2">
+                <span className="text-[9px] font-bold uppercase tracking-widest opacity-40 ml-1">Search Intelligence Access</span>
+                <input 
+                  type="password"
+                  value={settings.searchKey || ""}
+                  onChange={(e) => updateSettings({ searchKey: e.target.value })}
+                  placeholder="Tavily / Serper Key"
+                  className="w-full bg-background/50 border border-border/20 rounded-xl px-5 py-3 text-xs focus:outline-none focus:ring-1 focus:ring-accent/30 font-mono"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <span className="text-[9px] font-bold uppercase tracking-widest opacity-40 ml-1">Organization-Level Sync Key</span>
+                <div className="relative">
+                  <input 
+                    type="text"
+                    value={settings.syncKey || ""}
+                    onChange={(e) => updateSettings({ syncKey: e.target.value })}
+                    placeholder="UUID"
+                    className="w-full bg-background/50 border border-border/20 rounded-xl px-5 py-3 text-xs focus:outline-none font-mono pr-20"
+                  />
+                  <div className="absolute right-2 top-1.5 flex gap-1">
+                    <button onClick={handleCopy} className="p-1.5 opacity-20 hover:opacity-100 hover:bg-secondary rounded-lg liquid-transition">
+                      {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
+                    </button>
+                    <button onClick={generateSyncKey} className="p-1.5 opacity-20 hover:opacity-100 hover:bg-secondary rounded-lg liquid-transition">
+                      <RefreshCw size={12} />
+                    </button>
                   </div>
                 </div>
               </div>
