@@ -68,7 +68,7 @@ export default function Home() {
           </div>
         </header>
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto no-scrollbar scroll-smooth px-6 md:px-20 lg:px-40 py-16 space-y-16">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto no-scrollbar scroll-smooth px-6 md:px-20 lg:px-40 pt-24 pb-48 space-y-16">
           {error && messages.length === 0 && (
             <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-4 animate-in fade-in zoom-in-95 duration-500">
               <div className="p-4 bg-red-500/10 rounded-full text-red-500"><AlertCircle size={48} /></div>
