@@ -30,7 +30,7 @@ export class AgentExecutor {
       const completion = await this.openai.chat.completions.create({
         model: model || "gpt-4o-mini",
         messages: history,
-        tools: toolSchemas,
+        tools: toolSchemas as any, // Cast to any to bypass strict literal check on type: "function"
         tool_choice: "auto",
       });
 
