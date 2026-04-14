@@ -88,7 +88,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                       e.stopPropagation();
                       removeSession(session.id);
                     }}
-                    className="absolute right-3 p-2 opacity-0 group-hover:opacity-40 hover:opacity-100 hover:text-red-500 liquid-transition"
+                    className="absolute right-3 p-2 opacity-0 group-hover:opacity-40 hover:opacity-100 hover:text-destructive liquid-transition"
                   >
                     <Trash2 size={14} />
                   </button>

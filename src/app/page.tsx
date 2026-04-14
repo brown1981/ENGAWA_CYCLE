@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useChat } from "@/hooks/useChat";
-import { Settings, Send, Download, Copy, MessageSquare, Plus, Paperclip, X, Square, AlertCircle } from "lucide-react";
+import { Settings, Send, Download, Copy, MessageSquare, Plus, Paperclip, X, Square, AlertCircle, BrainCircuit } from "lucide-react";
 import { Sidebar } from "@/components/Sidebar";
 import { exportToMarkdown } from "@/lib/export";
 import { SettingsModal } from "@/components/SettingsModal";

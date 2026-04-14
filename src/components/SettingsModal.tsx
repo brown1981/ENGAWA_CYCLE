@@ -38,7 +38,7 @@ export function SettingsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm animate-in fade-in duration-500">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-500">
       <div 
         className="relative w-full max-w-2xl max-h-[85vh] overflow-hidden bg-card border border-border/40 shadow-[0_32px_128px_-32px_rgba(0,0,0,0.5)] rounded-[2rem] flex flex-col animate-in zoom-in-95 duration-500"
       >
