@@ -74,7 +74,7 @@ export default function Home() {
               <div className="p-4 bg-red-500/10 rounded-full text-red-500"><AlertCircle size={48} /></div>
               <h2 className="text-lg font-bold">通信エラーが発生しました</h2>
               <p className="text-sm opacity-60 max-w-xs">{error}</p>
-              <button onClick={() => setIsSettingsOpen(true)} className="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-full text-xs font-bold uppercase tracking-wider hover:scale-105 transition-all">Settings を確認する</button>
+              <button onClick={() => setIsSettingsOpen(true)} className="px-6 py-3 bg-primary text-primary-foreground rounded-full text-xs font-bold uppercase tracking-wider hover:scale-105 liquid-transition shadow-lg">Settings を確認する</button>
             </div>
           )}
 
@@ -111,7 +111,7 @@ export default function Home() {
           )}
 
           {error && messages.length > 0 && (
-            <div className="p-6 bg-red-50 dark:bg-red-900/10 text-red-500 text-xs rounded-[1.5rem] border border-red-100 dark:border-red-900/20">{error}</div>
+            <div className="p-6 bg-destructive/10 text-destructive text-xs rounded-[2rem] border border-destructive/20">{error}</div>
           )}
         </div>
 
@@ -119,8 +119,8 @@ export default function Home() {
           <div className="max-w-3xl mx-auto w-full pointer-events-auto">
             <div className="relative group">
               {attachedImage && (
-                <div className="absolute -top-24 left-4 p-2 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl animate-in slide-in-from-bottom-2 duration-300">
-                  <div className="relative"><img src={attachedImage} alt="Preview" className="w-16 h-16 object-cover rounded-xl" /><button onClick={() => setAttachedImage(null)} className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full"><X size={10} /></button></div>
+                <div className="absolute -top-24 left-4 p-2 bg-card rounded-2xl border border-border shadow-2xl animate-in slide-in-from-bottom-2 duration-300">
+                  <div className="relative"><img src={attachedImage} alt="Preview" className="w-16 h-16 object-cover rounded-xl" /><button onClick={() => setAttachedImage(null)} className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full"><X size={10} /></button></div>
                 </div>
               )}
               <textarea

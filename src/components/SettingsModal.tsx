@@ -183,10 +183,12 @@ export function SettingsModal({
                   onClick={() => updateSettings({ theme: t })}
                   className={`
                     flex-1 py-5 rounded-[1.8rem] border liquid-transition flex flex-col items-center gap-3
-                    ${settings.theme === t ? "bg-accent/10 border-accent/40 ring-1 ring-accent/20 opacity-100" : "bg-card border-border/20 opacity-30 hover:opacity-100"}
+                    ${settings.theme === t 
+                      ? "bg-primary text-primary-foreground border-primary shadow-xl opacity-100" 
+                      : "bg-card border-border/20 opacity-40 hover:opacity-100"}
                   `}
                 >
-                  <div className={`w-5 h-5 rounded-full shadow-inner ${t === 'pure-black' ? 'bg-black' : t === 'glass' ? 'bg-zinc-400' : 'bg-[#fdfaf6] border border-border/60'}`} />
+                  <div className={`w-5 h-5 rounded-full shadow-inner ${t === 'pure-black' ? 'bg-black' : t === 'glass' ? 'bg-sky-400' : 'bg-[#fdfaf6] border border-border/60'}`} />
                   <span className="text-[9px] font-black uppercase tracking-[0.2em]">{t}</span>
                 </button>
               ))}

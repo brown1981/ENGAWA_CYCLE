@@ -29,23 +29,63 @@
   .dark, [data-theme="pure-black"], .theme-root.pure-black {
     --background: 0 0% 0%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 3%;
+    --card: 0 0% 4%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3%;
+    --popover: 0 0% 4%;
     --popover-foreground: 0 0% 98%;
     --primary: 0 0% 98%;
     --primary-foreground: 0 0% 9%;
-    --secondary: 240 3.7% 15.9%;
+    --secondary: 0 0% 12%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 210 100% 50%;
-    --accent-foreground: 0 0% 98%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 212 100% 50%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 0 0% 89%;
+  }
+
+  .theme-root.paper {
+    --background: 36 33% 97%;
+    --foreground: 20 10% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 10% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 10% 10%;
+    --primary: 20 10% 10%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 36 33% 92%;
+    --secondary-foreground: 20 10% 10%;
+    --muted: 36 33% 90%;
+    --muted-foreground: 20 10% 40%;
+    --accent: 212 100% 45%;
+    --accent-foreground: 0 0% 100%;
+    --border: 36 20% 85%;
+    --input: 36 20% 85%;
+    --ring: 20 10% 10%;
+  }
+
+  .theme-root.glass {
+    --background: 240 10% 98%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 250 100% 60%;
+    --accent-foreground: 0 0% 100%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
   }
 }
 
@@ -81,8 +121,8 @@
 }
 
 @keyframes synapsing {
-  0%, 100% { opacity: 0.5; filter: drop-shadow(0 0 2px rgba(255,255,255,0.2)); }
-  50% { opacity: 1; filter: drop-shadow(0 0 8px rgba(255,255,255,0.4)); }
+  0%, 100% { opacity: 0.5; filter: drop-shadow(0 0 2px hsl(var(--foreground) / 0.2)); }
+  50% { opacity: 1; filter: drop-shadow(0 0 8px hsl(var(--foreground) / 0.4)); }
 }
 
 .animate-float-in {
