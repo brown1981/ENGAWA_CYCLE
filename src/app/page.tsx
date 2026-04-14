@@ -60,11 +60,11 @@ export default function Home() {
 
       <div className="flex-1 flex flex-col h-full relative">
         <header className="flex justify-between items-center px-8 py-6 z-10 transition-all">
-          <button onClick={() => setIsSidebarOpen(true)} className="p-2 opacity-40 hover:opacity-100 transition-opacity"><MessageSquare size={18} /></button>
+          <button onClick={() => setIsSidebarOpen(true)} className="p-2 opacity-60 hover:opacity-100 transition-opacity"><MessageSquare size={18} /></button>
           <div className="flex gap-4 items-center">
-            {messages.length > 0 && <div className="text-[10px] opacity-40 font-bold uppercase tracking-[0.2em] mr-4 select-none">{messages.length} Thoughts</div>}
-            <button onClick={() => createSession()} className="p-2 opacity-40 hover:opacity-100 transition-opacity"><Plus size={18} /></button>
-            <button onClick={() => setIsSettingsOpen(true)} className="p-2 opacity-40 hover:opacity-100 transition-opacity"><Settings size={18} /></button>
+            {messages.length > 0 && <div className="text-[10px] opacity-70 font-bold uppercase tracking-[0.2em] mr-4 select-none">{messages.length} Thoughts</div>}
+            <button onClick={() => createSession()} className="p-2 opacity-60 hover:opacity-100 transition-opacity"><Plus size={18} /></button>
+            <button onClick={() => setIsSettingsOpen(true)} className="p-2 opacity-60 hover:opacity-100 transition-opacity"><Settings size={18} /></button>
           </div>
         </header>
 
@@ -89,7 +89,7 @@ export default function Home() {
               const displayContent = (isLast && m.role === "assistant" && streamingContent) ? streamingContent : m.content;
               return (
                 <div key={m.id} className={`group flex flex-col space-y-4 ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
-                  <div className={`chat-bubble px-6 py-5 rounded-[2rem] shadow-sm max-w-[90%] transition-transform duration-300 ${m.role === 'user' ? 'bg-accent text-white rounded-tr-none shadow-accent/20' : 'bg-zinc-100 dark:bg-zinc-900 rounded-tl-none border border-zinc-200 dark:border-zinc-800'}`}>
+                  <div className={`chat-bubble px-6 py-5 rounded-[2rem] shadow-md max-w-[90%] transition-transform duration-300 ${m.role === 'user' ? 'bg-accent text-white rounded-tr-none shadow-accent/40' : 'bg-zinc-100 dark:bg-zinc-900 rounded-tl-none border border-zinc-200 dark:border-zinc-800'}`}>
                     {m.content.includes("data:image") && (
                        <img src={m.content.match(/data:image\/[^;]+;base64,[^ \n]+/)?.[0]} alt="Attached" className="rounded-xl mb-4 max-h-64 object-cover w-full shadow-lg" />
                     )}
