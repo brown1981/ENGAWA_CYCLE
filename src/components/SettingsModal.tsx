@@ -1,6 +1,6 @@
 "use client";
 
-import { X, Key, ShieldCheck, Palette, Zap, History, Cpu, Cloud, RefreshCw, Copy, Check, BrainCircuit } from "lucide-react";
+import { X, Key, Palette, Zap, History, Cpu, Cloud, RefreshCw, Copy, Check, BrainCircuit, Sparkles } from "lucide-react";
 import { AVAILABLE_MODELS, AppTheme } from "@/lib/types";
 import { useChatContext } from "@/contexts/ChatContext";
 import { useState } from "react";
@@ -44,7 +44,7 @@ export function SettingsModal({
       <div 
         className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-[2.5rem] p-8 shadow-2xl border border-zinc-200 dark:border-zinc-800 animate-in zoom-in-95 duration-300"
       >
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold tracking-tight">Settings</h2>
           <button 
             onClick={onClose}
@@ -56,6 +56,22 @@ export function SettingsModal({
 
         <div className="space-y-8 max-h-[65vh] overflow-y-auto pr-2 custom-scrollbar pb-4">
           
+          {/* Phase 6: AI Personality (System Prompt) */}
+          <section className="space-y-3">
+            <label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-30 flex items-center gap-2">
+              <Sparkles size={12} /> AI Personality
+            </label>
+            <textarea
+              value={settings.customInstructions || ""}
+              onChange={(e) => updateSettings({ customInstructions: e.target.value })}
+              placeholder="例：あなたは論理的で簡潔な回答を好む、テック系コンサルタントです。日本語で回答してください。"
+              className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-accent transition-all resize-none min-h-[100px] leading-relaxed"
+            />
+            <p className="text-[10px] opacity-20 px-2 leading-relaxed">
+              * ここに入力した指示は、すべての対話とモデルに適用されます。
+            </p>
+          </section>
+
           {/* Intelligence Engine */}
           <section className="space-y-3">
             <label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-30 flex items-center gap-2">
@@ -85,7 +101,7 @@ export function SettingsModal({
             </div>
           </section>
 
-          {/* API Keys - Multiple Providers (Phase 4.2 & 4.3) */}
+          {/* API Keys - Multiple Providers */}
           <section className="space-y-4">
             <label className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-30 flex items-center gap-2">
               <BrainCircuit size={12} /> Provider Keys
@@ -94,7 +110,7 @@ export function SettingsModal({
             <div className="space-y-3">
               <div className="space-y-1.5">
                 <div className="flex justify-between px-2">
-                  <span className="text-[9px] font-bold opacity-30">OPENAI (GPT-4o)</span>
+                  <span className="text-[9px] font-bold opacity-30">OPENAI</span>
                   <a href="https://platform.openai.com/" target="_blank" className="text-[9px] opacity-20 hover:opacity-50 transition-opacity underline">Get Key</a>
                 </div>
                 <input
@@ -108,7 +124,7 @@ export function SettingsModal({
 
               <div className="space-y-1.5">
                 <div className="flex justify-between px-2">
-                  <span className="text-[9px] font-bold opacity-30">ANTHROPIC (Claude 3.5)</span>
+                  <span className="text-[9px] font-bold opacity-30">ANTHROPIC</span>
                   <a href="https://console.anthropic.com/" target="_blank" className="text-[9px] opacity-20 hover:opacity-50 transition-opacity underline">Get Key</a>
                 </div>
                 <input
@@ -122,7 +138,7 @@ export function SettingsModal({
 
               <div className="space-y-1.5">
                 <div className="flex justify-between px-2">
-                  <span className="text-[9px] font-bold opacity-30">GOOGLE (Gemini 2.5)</span>
+                  <span className="text-[9px] font-bold opacity-30">GOOGLE</span>
                   <a href="https://aistudio.google.com/" target="_blank" className="text-[9px] opacity-20 hover:opacity-50 transition-opacity underline">Get Key Free</a>
                 </div>
                 <input
@@ -181,9 +197,6 @@ export function SettingsModal({
                 </div>
               </div>
             </div>
-            <p className="text-[10px] opacity-30 leading-relaxed italic">
-              * このキーを別のデバイスで入力すると同期が始まります。
-            </p>
           </section>
 
           {/* Theme & Aesthetics */}

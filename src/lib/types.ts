@@ -24,7 +24,7 @@ export type ModelOption = {
   id: string;
   name: string;
   description: string;
-  provider: "openai" | "anthropic" | "google"; // Phase 4.3 Expansion
+  provider: "openai" | "anthropic" | "google";
 };
 
 export const AVAILABLE_MODELS: ModelOption[] = [
@@ -77,4 +77,6 @@ export type GlobalSettings = {
   // Phase 4.2 & 4.3: Multi-provider Keys
   anthropicKey?: string;
   geminiKey?: string;
+  // Phase 6: Personality
+  customInstructions?: string;
 };

@@ -99,7 +99,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
           <div className="mt-auto pt-4 border-t border-zinc-200 dark:border-zinc-800 px-2">
             <div className="text-[10px] opacity-20 uppercase font-bold tracking-tighter">
-              Minimal LLM Workspace v0.2.0
+              Minimal LLM Workspace v1.0.0
             </div>
           </div>
         </div>

@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     const anthropicKey = req.headers.get("X-Anthropic-Key");
     const geminiKey = req.headers.get("X-Gemini-Key");
     
-    const { messages, model, image } = await req.json();
+    const { messages, model, image, customInstructions } = await req.json();
     const imageData = image ? parseDataUrl(image) : null;
 
     // Provider Routing: Google Gemini
@@ -25,7 +25,6 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Google API Key is required for Gemini models" }, { status: 401 });
       }
 
-      // Gemini Content API call
       const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
         method: "POST",
         headers: {
@@ -33,11 +32,15 @@ export async function POST(req: Request) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          ...(customInstructions ? {
+            systemInstruction: {
+              parts: [{ text: customInstructions }]
+            }
+          } : {}),
           contents: messages.map((m: any, idx: number) => {
             const isLastMessage = idx === messages.length - 1;
             const parts = [];
             
-            // If this is the last message and we have an image attached, add it to parts
             if (isLastMessage && imageData) {
               parts.push({
                 inline_data: {
@@ -47,7 +50,6 @@ export async function POST(req: Request) {
               });
             }
 
-            // Strip the base64 from stored content for the clean payload
             const textContent = m.content.replace(/data:image\/[^;]+;base64,[^ \n]+/, "").trim();
             parts.push({ text: textContent });
 
@@ -95,6 +97,7 @@ export async function POST(req: Request) {
         body: JSON.stringify({
           model: model,
           max_tokens: 4096,
+          ...(customInstructions ? { system: customInstructions } : {}),
           messages: messages.map((m: any, idx: number) => {
             const isLastMessage = idx === messages.length - 1;
             const textContent = m.content.replace(/data:image\/[^;]+;base64,[^ \n]+/, "").trim();
@@ -141,7 +144,6 @@ export async function POST(req: Request) {
     const openai = new OpenAI({ apiKey: openaiKey });
     const isSearchModel = model?.includes("search");
     
-    // Format messages for OpenAI Vision/Text
     const formattedMessages = messages.map((m: any, idx: number) => {
       const isLastMessage = idx === messages.length - 1;
       const textContent = m.content.replace(/data:image\/[^;]+;base64,[^ \n]+/, "").trim();
@@ -160,6 +162,14 @@ export async function POST(req: Request) {
       }
       return { role: m.role, content: textContent };
     });
+
+    // Phase 6: Inject System Instructions for OpenAI
+    if (customInstructions) {
+      formattedMessages.unshift({
+        role: "system",
+        content: customInstructions
+      });
+    }
 
     const response = await openai.chat.completions.create({
       model: model || "gpt-4o-mini-search-preview",

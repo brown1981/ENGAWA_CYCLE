@@ -105,7 +105,8 @@ export function useChat() {
         body: JSON.stringify({
           messages: [...(targetSession?.messages || []), userMessage],
           model: targetSession?.model || model,
-          image: image // Also send as specialized top-level field for DALL-E or Vision
+          image: image,
+          customInstructions: settings.customInstructions // Phase 6: Inject Personality
         }),
       });
 
