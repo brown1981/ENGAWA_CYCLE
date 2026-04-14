@@ -1,5 +1,7 @@
 import { ToolDefinition } from "./index";
 
+import { supabase } from "../supabase";
+
 /**
  * 🗄️ Task Management Tool
  * AI社員が自ら「DBに業務を記録する」ための手足
@@ -27,18 +29,27 @@ export const manage_tasks: ToolDefinition = {
     required: ["action"],
   },
   execute: async ({ action, title, description }) => {
-    // 💡 注意: 実際のプロダクトでは settings から URL と Key を取得して fetch する必要があります。
-    // コンテキストの都合上、ここでは URL などが API ルート側で管理されている想定、
-    // またはツール実行時に環境変数やヘッダーから流し込む設計にします。
-    
-    // このツール内では、API ルート側で定義された Supabase 連携ロジックを期待するか、
-    // あるいは直接 Fetch で Supabase API を叩きます。
-    
-    return {
-      success: true,
-      message: `タスク '${title}' を(模擬的に)DBに保存しました。`,
-      action,
-      data: { title, description, status: "todo" }
-    };
+    try {
+      if (action === "create") {
+        const { data, error } = await supabase
+          .from("tasks")
+          .insert([{ title, description, status: "todo" }])
+          .select();
+
+        if (error) throw error;
+        return { success: true, message: `タスク '${title}' をDBに記録しました。`, data };
+      } else {
+        const { data, error } = await supabase
+          .from("tasks")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(5);
+
+        if (error) throw error;
+        return { success: true, count: data.length, tasks: data };
+      }
+    } catch (error: any) {
+      return { success: false, error: error.message || "Database action failed" };
+    }
   },
 };

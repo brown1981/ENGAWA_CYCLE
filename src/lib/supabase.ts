@@ -1,6 +1,10 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
-export const getSupabase = (url?: string, key?: string) => {
-  if (!url || !key) return null;
-  return createClient(url, key);
-};
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+
+/**
+ * 🏰 Engawa Cycle - Supabase Client
+ * Vercel の環境変数を使用して、DBとの通信を確立します。
+ */
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
