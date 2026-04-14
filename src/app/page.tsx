@@ -59,16 +59,16 @@ export default function Home() {
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       <div className="flex-1 flex flex-col h-full relative">
-        <header className="flex justify-between items-center px-10 py-8 z-10 sticky top-0 bg-background/40 backdrop-blur-3xl border-b border-border/20">
-          <button onClick={() => setIsSidebarOpen(true)} className="p-2.5 opacity-30 hover:opacity-100 hover:bg-secondary rounded-lg liquid-transition active:scale-95"><MessageSquare size={17} /></button>
-          <div className="flex gap-6 items-center">
-            {messages.length > 0 && <div className="text-[9px] opacity-25 font-bold uppercase tracking-[0.5em] mr-4 select-none font-heading">{messages.length} Strategic Thoughts</div>}
-            <button onClick={() => createSession()} className="p-2.5 opacity-30 hover:opacity-100 hover:bg-secondary rounded-lg liquid-transition active:scale-95"><Plus size={17} /></button>
-            <button onClick={() => setIsSettingsOpen(true)} className="p-2.5 opacity-30 hover:opacity-100 hover:bg-secondary rounded-lg liquid-transition active:scale-95"><Settings size={17} /></button>
+        <header className="flex justify-between items-center px-10 py-10 z-10 sticky top-0 bg-background/60 backdrop-blur-3xl border-b border-border/20">
+          <button onClick={() => setIsSidebarOpen(true)} className="p-2.5 opacity-20 hover:opacity-100 hover:bg-secondary rounded-lg liquid-transition active:scale-95"><MessageSquare size={17} /></button>
+          <div className="flex gap-8 items-center">
+            {messages.length > 0 && <div className="text-[9px] opacity-20 font-bold uppercase tracking-[0.5em] mr-4 select-none font-heading">{messages.length} Active Records</div>}
+            <button onClick={() => createSession()} className="p-2.5 opacity-20 hover:opacity-100 hover:bg-secondary rounded-lg liquid-transition active:scale-95"><Plus size={17} /></button>
+            <button onClick={() => setIsSettingsOpen(true)} className="p-2.5 opacity-20 hover:opacity-100 hover:bg-secondary rounded-lg liquid-transition active:scale-95"><Settings size={17} /></button>
           </div>
         </header>
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto px-8 pb-36 pt-4 space-y-12 max-w-3xl mx-auto w-full scroll-smooth custom-scrollbar">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto no-scrollbar scroll-smooth px-6 md:px-20 lg:px-40 py-16 space-y-16">
           {error && messages.length === 0 && (
             <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-4 animate-in fade-in zoom-in-95 duration-500">
               <div className="p-4 bg-red-500/10 rounded-full text-red-500"><AlertCircle size={48} /></div>
@@ -78,9 +78,6 @@ export default function Home() {
             </div>
           )}
 
-          {isLoading && messages.length === 0 && !error ? (
-            <div className="h-full flex flex-col items-center justify-center opacity-10 space-y-4">
-              <h1 className="text-5xl font-semibold tracking-tighter mix-blend-difference">Genesis</h1>
               <p className="text-[11px] font-bold uppercase tracking-[0.3em]">思考を、そのままの形で。</p>
             </div>
           ) : (
@@ -103,9 +100,9 @@ export default function Home() {
           )}
           
           {isLoading && (
-            <div className="flex items-start animate-float-in">
-              <div className="bg-card px-5 py-3 rounded-[calc(var(--radius)*0.6)] rounded-tl-none border border-border/30 animate-synapsing backdrop-blur-3xl">
-                <span className="text-[9px] font-bold tracking-[0.4em] uppercase opacity-25 font-heading">Processing Strategy</span>
+            <div className="flex items-start animate-soft-in">
+              <div className="bg-card px-6 py-3.5 rounded-2xl border border-border/30 pulse-intelligence backdrop-blur-3xl">
+                <span className="text-[9px] font-bold tracking-[0.4em] uppercase opacity-25 font-heading">Executing Neural Sequence</span>
               </div>
             </div>
           )}
@@ -127,17 +124,16 @@ export default function Home() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-                placeholder={attachedImage ? "画像についての指示..." : "戦略を入力..."}
-                className="w-full bg-card/90 backdrop-blur-3xl border border-border/40 rounded-[calc(var(--radius)*1.2)] px-8 py-5 pr-32 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] focus:outline-none focus:ring-1 focus:ring-accent/30 liquid-transition resize-none min-h-[60px] max-h-48 no-scrollbar disabled:opacity-50 text-sm"
+                placeholder={attachedImage ? "Provide context for this visual..." : "Declare strategy..."}
+                className="w-full bg-card/80 backdrop-blur-3xl border border-border/30 rounded-2xl px-10 py-6 pr-32 shadow-[0_32px_80px_-20px_rgba(0,0,0,0.1)] focus:outline-none focus:ring-1 focus:ring-accent/20 liquid-transition resize-none min-h-[72px] max-h-48 no-scrollbar disabled:opacity-50 text-[15px]"
                 rows={1}
                 disabled={isLoading}
               />
-              <div className="absolute right-5 bottom-4 flex gap-3.5">
+              <div className="absolute right-6 bottom-5 flex gap-4">
                 <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".txt,.md,image/*" disabled={isLoading} />
-                <button onClick={() => fileInputRef.current?.click()} className={`p-2.5 liquid-transition rounded-lg ${attachedImage ? 'text-accent opacity-100' : 'opacity-15 hover:opacity-100'}`} disabled={isLoading}><Paperclip size={18} /></button>
-                <button onClick={handleSend} className={`p-3 relative group liquid-transition active:scale-95 ${isLoading ? 'bg-destructive' : 'bg-accent'} text-accent-foreground rounded-xl disabled:opacity-50`}>
-                  {isLoading ? <Square size={15} fill="currentColor" /> : <Send size={15} />}
-                  <div className="absolute inset-0 rounded-xl bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <button onClick={() => fileInputRef.current?.click()} className={`p-3 liquid-transition rounded-xl ${attachedImage ? 'text-accent opacity-100 bg-accent/5' : 'opacity-20 hover:opacity-100 hover:bg-secondary'}`} disabled={isLoading}><Paperclip size={18} /></button>
+                <button onClick={handleSend} className={`p-3.5 relative group liquid-transition active:scale-90 ${isLoading ? 'bg-destructive' : 'bg-accent'} text-accent-foreground rounded-xl shadow-lg shadow-accent/20 disabled:opacity-50 transition-all`}>
+                  {isLoading ? <Square size={16} fill="currentColor" /> : <Send size={16} />}
                 </button>
               </div>
             </div>

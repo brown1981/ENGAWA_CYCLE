@@ -4,94 +4,75 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 210 100% 50%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
+    /* 🏔️ Harmonic Foundation - Optimized for Eye Comfort (Stone/Zinc/Indigo) */
     --radius: 0.75rem;
+    
+    /* Default Mode: Light (Zen-like) */
+    --background: 30 20% 98%;
+    --foreground: 240 10% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 10%;
+    --popover: 0 0% 101%;
+    --popover-foreground: 240 10% 10%;
+    --primary: 240 10% 15%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 30 15% 94%;
+    --secondary-foreground: 240 10% 15%;
+    --muted: 30 15% 90%;
+    --muted-foreground: 240 10% 45%;
+    --accent: 230 60% 55%; /* Harmonic Indigo */
+    --accent-foreground: 0 0% 100%;
+    --border: 30 10% 88%;
+    --input: 30 10% 88%;
+    --ring: 230 60% 55%;
   }
 
-  .dark, [data-theme="pure-black"], .theme-root.pure-black {
-    --background: 0 0% 0% !important;
+  .dark {
+    /* Default Mode: Dark (Ink-like) */
+    --background: 240 10% 4%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 4%;
+    --card: 240 10% 7%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 4%;
+    --popover: 240 10% 8%;
     --popover-foreground: 0 0% 98%;
     --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 5%;
-    --secondary: 0 0% 10%;
+    --primary-foreground: 240 10% 5%;
+    --secondary: 240 10% 12%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 55%;
-    --accent: 215 100% 50%;
+    --muted: 240 10% 15%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 230 70% 65%; /* Soft Luminous Indigo */
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 0 0% 80%;
+    --border: 240 10% 16%;
+    --input: 240 10% 16%;
+    --ring: 230 70% 65%;
   }
 
-  .theme-root.paper {
-    --background: 35 30% 96% !important;
-    --foreground: 20 10% 5%;
-    --card: 0 0% 100%;
-    --card-foreground: 20 10% 5%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 20 10% 5%;
-    --primary: 20 10% 5%;
-    --primary-foreground: 0 0% 100%;
+  /* --- Stylistic Refinements --- */
+  
+  .ink {
+    /* Ink theme focuses on deep graphite & charcoal textures */
+    --accent: 215 50% 50%; /* Slate Blue */
+  }
+
+  .zen {
+    /* Zen theme focuses on warm parchment & stone textures */
+    --background: 35 30% 96%;
     --secondary: 35 25% 90%;
-    --secondary-foreground: 20 10% 5%;
-    --muted: 35 20% 85%;
-    --muted-foreground: 20 10% 40%;
-    --accent: 215 100% 42%;
-    --accent-foreground: 0 0% 100%;
     --border: 35 15% 82%;
-    --input: 35 15% 82%;
-    --ring: 20 10% 5%;
   }
 
-  .theme-root.glass {
-    --background: 240 10% 99% !important;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 245 100% 64%;
-    --accent-foreground: 0 0% 100%;
-    --border: 240 5.9% 88%;
-    --input: 240 5.9% 88%;
-    --ring: 240 5.9% 10%;
+  .aether {
+    /* Aether (Glass) theme focuses on translucent layers & azure glow */
+    --accent: 195 90% 45%; /* Azure */
   }
-}
 
-@layer base {
-  :root {
-    --radius: 1.25rem; /* More professional, less 'bubbly' radius */
+  html, body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    min-height: 100vh;
+    transition: background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s ease;
+    @apply antialiased overflow-hidden selection:bg-accent/30;
   }
 }
 
@@ -99,63 +80,46 @@
   * {
     border-color: hsl(var(--border));
   }
-  .theme-root {
-    background-color: hsl(var(--background));
-    min-height: 100vh;
-    transition: background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  body {
-    @apply text-foreground;
-    font-family: var(--font-inter), -apple-system, system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    transition: color 0.5s ease;
-  }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-outfit), var(--font-inter), sans-serif;
-    @apply tracking-tight;
+    @apply tracking-tight font-semibold;
   }
 }
 
-/* --- Engawa Cycle Premium Utilities --- */
+/* --- Premium Esthetics --- */
 
 .glass-morphism {
-  @apply bg-opacity-70 backdrop-blur-xl border border-white/10;
+  @apply bg-opacity-70 backdrop-blur-2xl border border-white/5;
 }
 
 .liquid-transition {
-  transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes floatUp {
-  from { transform: translateY(12px); opacity: 0; }
+.chat-bubble-p {
+  @apply leading-[1.65] tracking-normal px-6 py-4.5 rounded-[1.25rem] shadow-sm;
+  font-size: 15px;
+}
+
+/* Scrollbar Engineering */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Custom Animations */
+@keyframes softFloat {
+  from { transform: translateY(8px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
-@keyframes synapsing {
-  0%, 100% { opacity: 0.5; filter: drop-shadow(0 0 2px hsl(var(--foreground) / 0.2)); }
-  50% { opacity: 1; filter: drop-shadow(0 0 8px hsl(var(--foreground) / 0.4)); }
+.animate-soft-in {
+  animation: softFloat 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.animate-float-in {
-  animation: floatUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+.pulse-intelligence {
+  animation: pulse-op 3s ease-in-out infinite;
 }
 
-.animate-synapsing {
-  animation: synapsing 2.5s ease-in-out infinite;
-}
-
-/* Hide scrollbars */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* Chat bubble aesthetics */
-.chat-bubble-p {
-  @apply leading-relaxed tracking-normal;
-  font-size: 0.9375rem; /* 15px equivalent */
+@keyframes pulse-op {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
 }

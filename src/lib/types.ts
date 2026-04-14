@@ -63,10 +63,12 @@ export const AVAILABLE_MODELS: ModelOption[] = [
 // For backward compatibility while migration
 export const OPENAI_MODELS = AVAILABLE_MODELS.filter(m => m.provider === "openai");
 
-export type AppTheme = "pure-black" | "glass" | "paper";
+export type AppTheme = "ink" | "zen" | "aether";
+export type AppearanceMode = "light" | "dark" | "auto";
 
 export type GlobalSettings = {
   theme: AppTheme;
+  appearanceMode: AppearanceMode;
   typingSpeed: number;
   retentionDays: number;
   autoSearch: boolean;

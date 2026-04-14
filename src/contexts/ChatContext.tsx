@@ -22,7 +22,8 @@ interface ChatContextType {
 }
 
 const DEFAULT_SETTINGS: GlobalSettings = {
-  theme: "pure-black",
+  theme: "ink",
+  appearanceMode: "auto",
   typingSpeed: 20,
   retentionDays: 30,
   autoSearch: true,
@@ -83,6 +84,25 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   }, [settings.supabaseUrl, settings.supabaseAnonKey, settings.syncKey]);
 
   useEffect(() => {
+    const root = window.document.documentElement;
+    const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    
+    // Cleanup old classes
+    root.classList.remove("light", "dark", "pure-black", "paper", "glass", "ink", "zen", "aether");
+    
+    // Apply Appearance Mode
+    if (settings.appearanceMode === "auto") {
+      root.classList.add(isDark ? "dark" : "light");
+    } else {
+      root.classList.add(settings.appearanceMode);
+    }
+    
+    // Apply Stylistic Theme
+    root.classList.add(settings.theme);
+    root.setAttribute("data-theme", settings.theme);
+  }, [settings.theme, settings.appearanceMode]);
+
+  useEffect(() => {
     if (isInitialized.current) return;
     const load = async () => {
       const savedSettings = localStorage.getItem("workspace_settings");
@@ -90,7 +110,11 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       if (savedSettings) {
         try { 
           const parsed = JSON.parse(savedSettings);
-          // Auto-sanitize on load
+          // Migration from old theme names if necessary
+          if (parsed.theme === "pure-black") parsed.theme = "ink";
+          if (parsed.theme === "paper") parsed.theme = "zen";
+          if (parsed.theme === "glass") parsed.theme = "aether";
+
           currentSettings = { 
             ...currentSettings, 
             ...parsed,
@@ -190,9 +214,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       sessions, currentSessionId, setCurrentSessionId, createSession, updateSession, upsertSession,
       removeSession, apiKey, setApiKey, model, setModel: setModelInContext, settings, updateSettings
     }}>
-      <div className={`theme-root ${settings.theme}`}>
-        {children}
-      </div>
+    }}>
+      {children}
     </ChatContext.Provider>
   );
 }
