@@ -29,33 +29,33 @@ export type ModelOption = {
 
 export const AVAILABLE_MODELS: ModelOption[] = [
   { 
-    id: "gpt-4o-search-preview", 
+    id: "gpt-4o", 
     name: "Deep Performance (GPT)", 
-    description: "Highest intelligence with autonomous search.",
+    description: "Highest intelligence for complex strategy and orchestration.",
     provider: "openai"
   },
   { 
     id: "claude-3-5-sonnet-20241022", 
     name: "Claude 3.5 Sonnet", 
-    description: "Exceptional reasoning, speed, and character.",
+    description: "Exceptional reasoning, coding, and character.",
     provider: "anthropic"
   },
   { 
-    id: "gemini-2.5-flash", 
+    id: "gemini-1.5-pro", 
+    name: "Advanced Analysis (Gemini)", 
+    description: "Google's most capable model for sophisticated reasoning.",
+    provider: "google"
+  },
+  { 
+    id: "gemini-1.5-flash", 
     name: "Swift & Adaptive (Gemini)", 
-    description: "Google's fastest model with huge context window.",
+    description: "Fast responses with an expansive cognitive window.",
     provider: "google"
   },
   { 
-    id: "gemini-2.5-pro", 
-    name: "Gemini 2.5 Pro", 
-    description: "Sophisticated reasoning and complex task handling.",
-    provider: "google"
-  },
-  { 
-    id: "gpt-4o-mini-search-preview", 
+    id: "gpt-4o-mini", 
     name: "Light & Swift (GPT)", 
-    description: "Fast responses with autonomous search.",
+    description: "Optimized for speed and efficient daily tasks.",
     provider: "openai"
   },
 ];
