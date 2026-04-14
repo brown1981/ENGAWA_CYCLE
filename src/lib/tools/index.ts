@@ -26,7 +26,7 @@ export const tools: Record<string, ToolDefinition> = {
 
 // OpenAI形式のスキーマ一覧を生成
 export const toolSchemas = Object.values(tools).map(t => ({
-  type: "function",
+  type: "function" as const,
   function: {
     name: t.name,
     description: t.description,
