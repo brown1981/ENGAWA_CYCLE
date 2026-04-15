@@ -1,182 +1,28 @@
 import { OpenAI } from "openai";
 import { toolSchemas, tools } from "@/lib/tools";
-import { supabase } from "@/lib/supabase";
-
-/**
- * 🧠 Engawa Cycle - Agent Executor
- * AI社員の「思考ループ」を統合管理するコアエンジン
- */
+import { TaskService } from "@/lib/services/taskService";
 export class AgentExecutor {
   private openai: OpenAI;
-  private requestId: string;
-  private maxLoops: number;
-  private agentId: string | null = null;
-  private agentInfo: any = null;
-  private extraKeys: { anthropicKey?: string; geminiKey?: string; searchKey?: string; } = {};
-  private recursionDepth: number;
-
-  constructor(apiKey: string, requestId: string, extraKeys: { anthropicKey?: string; geminiKey?: string; searchKey?: string; } = {}, maxLoops: number = 5, recursionDepth: number = 0) {
-    this.openai = new OpenAI({ apiKey, timeout: 60000 }); // Delegation needs longer timeout
-    this.requestId = requestId;
-    this.extraKeys = extraKeys;
-    this.maxLoops = maxLoops;
-    this.recursionDepth = recursionDepth;
+  private taskService: TaskService;
+  constructor(apiKey: string, private requestId: string, private extraKeys: any = {}, private recursionDepth: number = 0) {
+    this.openai = new OpenAI({ apiKey });
+    this.taskService = new TaskService();
   }
-
-  /**
-   * 別のエージェントに仕事を依頼する
-   */
-  async delegate(role: string, instruction: string, model: string = "gpt-4o-mini", onStatus?: (status: string) => void) {
-    if (this.recursionDepth >= 3) {
-      throw new Error("Maximum delegation depth (3) reached. Preventing infinite loops.");
-    }
-
-    console.log(`[Executor:${this.requestId}] Delegating to ${role} (Depth: ${this.recursionDepth + 1})...`);
-    
-    // 自ネットワークに OpenAI Key を引き継ぐ
-    const subExecutor = new AgentExecutor(
-      (this.openai as any).apiKey, 
-      `${this.requestId}-sub-${role.toLowerCase()}`,
-      this.extraKeys,
-      this.maxLoops,
-      this.recursionDepth + 1
-    );
-
-    await subExecutor.loadAgent(role);
-    
-    // システムプロンプトを構築して実行
-    const subMessages = [
-      {
-        role: "system",
-        content: `あなたはエージェント「${subExecutor.agentInfo?.name || role}」です。役割: ${subExecutor.agentInfo?.instructions || "指示に従ってください"}`
-      },
-      { role: "user", content: instruction }
-    ];
-
-    return subExecutor.runV2(subMessages, model, onStatus);
-  }
-
-  /**
-   * DBから特定のエージェント（役職）の情報をロードします
-   */
-  async loadAgent(role: string = "Manager") {
-    console.log(`[Executor:${this.requestId}] Loading agent with role: ${role}`);
-    const { data, error } = await supabase
-      .from("agents")
-      .select("*")
-      .eq("role", role)
-      .maybeSingle();
-
-    if (error) {
-      console.warn(`[Executor:${this.requestId}] Failed to load agent:`, error);
-      return null;
-    }
-
-    if (data) {
-      this.agentId = data.id;
-      this.agentInfo = data;
-      return data;
-    }
-    return null;
-  }
-
-  /**
-   * 社長（ユーザー）からの指示を受け取り、
-   * 必要ならツールを使いながら最終的な解決策を導き出す。
-   */
-  async runV2(messages: any[], model: string, onStatus?: (status: string) => void) {
-    let loopCount = 0;
-    const history = [...messages];
-
-    if (onStatus) onStatus("Analyzing directive and planning tactical strategy...");
-
-    while (loopCount < this.maxLoops) {
-      console.log(`[Executor:${this.requestId}] Loop ${loopCount + 1}...`);
-      
-      const completion = await this.openai.chat.completions.create({
-        model: model || "gpt-4o-mini",
-        messages: history,
-        tools: toolSchemas as any, 
-        tool_choice: "auto",
-      });
-
-      const assistantMessage = completion.choices[0].message;
-      history.push(assistantMessage);
-
-      // 1. ツール呼び出しがない＝思考完了
-      if (!assistantMessage.tool_calls || assistantMessage.tool_calls.length === 0) {
-        console.log(`[Executor:${this.requestId}] Goal reached.`);
-        if (onStatus) onStatus("Synthesizing final executive report...");
-        return {
-          id: completion.id,
-          content: assistantMessage.content,
-          history
-        };
+  async loadAgent(role: string) { return await this.taskService.loadAgentProfile(role); }
+  async runV2(messages: any[], model: string, onStatus?: (s: string) => void) {
+    let currentMessages = [...messages];
+    for (let i = 0; i < 5; i++) {
+      if (onStatus) onStatus(`Thinking (Loop ${i+1})...`);
+      const response = await this.openai.chat.completions.create({ model, messages: currentMessages, tools: toolSchemas });
+      const message = response.choices[0].message;
+      if (!message.tool_calls) return { content: message.content || "" };
+      currentMessages.push(message);
+      for (const t of message.tool_calls) {
+        if (onStatus) onStatus(`Using tool: ${t.function.name}...`);
+        const result = await (tools as any)[t.function.name](JSON.parse(t.function.arguments), this.extraKeys);
+        currentMessages.push({ role: "tool", tool_call_id: t.id, content: JSON.stringify(result) });
       }
-
-      // 2. ツール呼び出しがある＝行動して観察
-      console.log(`[Executor:${this.requestId}] Executing ${assistantMessage.tool_calls.length} tools...`);
-      
-      for (const toolCall of assistantMessage.tool_calls) {
-        const toolName = toolCall.function.name;
-        const tool = tools[toolName];
-        if (tool) {
-          try {
-            const args = JSON.parse(toolCall.function.arguments);
-            
-            // ステータス通知の生成
-            if (onStatus) {
-              if (toolName === "delegate_task") {
-                onStatus(`Delegating complex task to ${args.role} specialist...`);
-              } else if (toolName === "web_search") {
-                onStatus("Searching the web for latest intelligence...");
-              } else if (toolName === "get_crypto_price") {
-                onStatus(`Retrieving real-time market data for ${args.symbol}...`);
-              } else {
-                onStatus(`Executing tool: ${toolName}...`);
-              }
-            }
-
-            const result = await tool.execute(args, {
-              requestId: this.requestId,
-              agentId: this.agentId,
-              delegate: (role: string, instruction: string, subModel: string) => 
-                this.delegate(role, instruction, subModel, onStatus), // 委譲先にもコールバックを渡す
-              ...this.extraKeys
-            });
-            
-            // Phase 7: 自動業務記録 (タスクログ)
-            if (this.agentId) {
-              await supabase.from("tasks").insert([{
-                title: `${this.agentInfo?.name || "AI"}: ${toolCall.function.name}`,
-                description: `Arguments: ${JSON.stringify(args)} \nResult: ${JSON.stringify(result)}`,
-                assigned_to: this.agentId,
-                status: "done",
-                parent_request_id: this.requestId
-              }]);
-            }
-
-            history.push({
-              role: "tool",
-              tool_call_id: toolCall.id,
-              content: JSON.stringify(result),
-            });
-          } catch (err: any) {
-            console.error(`[Executor:${this.requestId}] Tool Error (${toolCall.function.name}):`, err);
-            history.push({
-              role: "tool",
-              tool_call_id: toolCall.id,
-              content: JSON.stringify({ error: err.message || "Execution failed" }),
-            });
-          }
-        } else {
-          console.warn(`[Executor:${this.requestId}] Tool not found: ${toolCall.function.name}`);
-        }
-      }
-
-      loopCount++;
     }
-
-    throw new Error(`Maximum thinking loops (${this.maxLoops}) reached.`);
+    return { content: "Process Complete" };
   }
 }
